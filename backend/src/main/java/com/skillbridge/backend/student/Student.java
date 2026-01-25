@@ -1,6 +1,10 @@
 package com.skillbridge.backend.student;
 
+import com.skillbridge.backend.studentskill.StudentSkill;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "students")
@@ -26,6 +30,9 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     private AvailabilityStatus availabilityStatus;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<StudentSkill> skills = new ArrayList<>();
 
     public Student() {}
 
