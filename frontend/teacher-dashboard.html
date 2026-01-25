@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - SSMS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="#2563eb"/>
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
+                        <circle cx="20" cy="20" r="3" fill="white"/>
+                    </svg>
+                    <span>SSMS</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="teacher-dashboard.html" class="menu-item active">
+                    <span class="menu-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="teacher-create-project.html" class="menu-item">
+                    <span class="menu-icon">➕</span>
+                    <span>Create Project</span>
+                </a>
+                <a href="teacher-search.html" class="menu-item">
+                    <span class="menu-icon">🔍</span>
+                    <span>Search Students</span>
+                </a>
+                <a href="teacher-projects.html" class="menu-item">
+                    <span class="menu-icon">📁</span>
+                    <span>My Projects</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-info">
+                        <h4>ADMIN</h4>
+                        <p>Teacher</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()" style="width: 100%; margin-top: 1rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back! Here's your overview</p>
+                </div>
+                <div class="top-actions">
+                    <a href="teacher-create-project.html" class="btn btn-primary">Create New Project</a>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">📁</div>
+                    <div class="stat-info">
+                        <h3>2</h3>
+                        <p>Active Projects</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">👥</div>
+                    <div class="stat-info">
+                        <h3>5</h3>
+                        <p>Total Students</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">📧</div>
+                    <div class="stat-info">
+                        <h3>3</h3>
+                        <p>Invitations Sent</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">✅</div>
+                    <div class="stat-info">
+                        <h3>1</h3>
+                        <p>Accepted</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Quick Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <a href="teacher-create-project.html" style="text-decoration: none;">
+                            <div style="padding: 2rem; background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(14, 165, 233, 0.1)); border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-4px)';" onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">➕</div>
+                                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">Create New Project</h3>
+                                <p style="color: var(--text-secondary);">Define requirements and start finding students</p>
+                            </div>
+                        </a>
+                        <a href="teacher-search.html" style="text-decoration: none;">
+                            <div style="padding: 2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(14, 165, 233, 0.1)); border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.borderColor='var(--success-color)'; this.style.transform='translateY(-4px)';" onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔍</div>
+                                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">Search Students</h3>
+                                <p style="color: var(--text-secondary);">Find students with specific skills</p>
+                            </div>
+                        </a>
+                        <a href="teacher-projects.html" style="text-decoration: none;">
+                            <div style="padding: 2rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1)); border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.borderColor='var(--warning-color)'; this.style.transform='translateY(-4px)';" onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div>
+                                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">View My Projects</h3>
+                                <p style="color: var(--text-secondary);">Manage and track your projects</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Projects</h2>
+                    <a href="teacher-projects.html" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.125rem; margin-bottom: 0.5rem; color: var(--text-primary);">E-Commerce Website Development</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem;">Build a full-stack e-commerce platform with payment integration</p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <span class="skill-tag">React</span>
+                                    <span class="skill-tag">Node.js</span>
+                                    <span class="skill-tag">MongoDB</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                                <span class="badge badge-info">Active</span>
+                                <p style="color: var(--text-light); font-size: 0.85rem;">Due: Feb 15, 2025</p>
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.125rem; margin-bottom: 0.5rem; color: var(--text-primary);">Machine Learning Model for Student Performance</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem;">Develop a predictive model for student academic performance</p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    <span class="skill-tag">Python</span>
+                                    <span class="skill-tag">Machine Learning</span>
+                                    <span class="skill-tag">Data Analysis</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                                <span class="badge badge-info">Active</span>
+                                <p style="color: var(--text-light); font-size: 0.85rem;">Due: Mar 1, 2025</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; border-left: 4px solid var(--success-color);">
+                            <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Invitation Accepted</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Rahul Kumar accepted your invitation for Machine Learning Model project</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">2 days ago</p>
+                        </div>
+                        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; border-left: 4px solid var(--primary-color);">
+                            <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Invitation Sent</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">You sent an invitation to Hardik Verma for E-Commerce Website project</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">6 days ago</p>
+                        </div>
+                        <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; border-left: 4px solid var(--secondary-color);">
+                            <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Project Created</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">You created a new project "E-Commerce Website Development"</p>
+                            <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">1 week ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

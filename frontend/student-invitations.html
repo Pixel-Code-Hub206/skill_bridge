@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitations - SSMS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="#2563eb"/>
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
+                        <circle cx="20" cy="20" r="3" fill="white"/>
+                    </svg>
+                    <span>SSMS</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="student-dashboard.html" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="student-profile.html" class="menu-item">
+                    <span class="menu-icon">👤</span>
+                    <span>My Profile</span>
+                </a>
+                <a href="student-skills.html" class="menu-item">
+                    <span class="menu-icon">⚡</span>
+                    <span>My Skills</span>
+                </a>
+                <a href="student-invitations.html" class="menu-item active">
+                    <span class="menu-icon">📧</span>
+                    <span>Invitations</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">HV</div>
+                    <div class="user-info">
+                        <h4>Hardik Verma</h4>
+                        <p>Student</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()" style="width: 100%; margin-top: 1rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Project Invitations</h1>
+                    <p class="page-subtitle">Manage your project invitations</p>
+                </div>
+            </div>
+
+            <!-- Invitations Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">All Invitations</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Project Title</th>
+                                    <th>Teacher</th>
+                                    <th>Sent Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invitationsTableBody">
+                                <!-- Invitations will be loaded by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State (shown when no invitations) -->
+            <div id="emptyState" style="display: none;">
+                <div class="card" style="text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 5rem; margin-bottom: 1.5rem;">📧</div>
+                    <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary);">No Invitations Yet</h3>
+                    <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">You haven't received any project invitations yet. Keep your skills updated and your profile active to receive opportunities from teachers.</p>
+                    <a href="student-skills.html" class="btn btn-primary" style="margin-top: 2rem; text-decoration: none;">Manage My Skills</a>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(14, 165, 233, 0.05));">
+                <div class="card-header">
+                    <h2 class="card-title">💡 Tips for Getting More Invitations</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--success-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">1</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Keep Your Skills Updated</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Regularly update your skill set with accurate proficiency levels</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--success-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">2</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Set Availability Status</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Mark yourself as "Available" or "Open to Work" to increase visibility</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--success-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">3</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Respond Promptly</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Teachers appreciate quick responses to their invitations</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--success-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">4</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Add Diverse Skills</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Having a variety of skills makes you suitable for different projects</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

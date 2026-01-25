@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Skills - SSMS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="#2563eb"/>
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
+                        <circle cx="20" cy="20" r="3" fill="white"/>
+                    </svg>
+                    <span>SSMS</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <a href="student-dashboard.html" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="student-profile.html" class="menu-item">
+                    <span class="menu-icon">👤</span>
+                    <span>My Profile</span>
+                </a>
+                <a href="student-skills.html" class="menu-item active">
+                    <span class="menu-icon">⚡</span>
+                    <span>My Skills</span>
+                </a>
+                <a href="student-invitations.html" class="menu-item">
+                    <span class="menu-icon">📧</span>
+                    <span>Invitations</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">HV</div>
+                    <div class="user-info">
+                        <h4>Hardik Verma</h4>
+                        <p>Student</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()" style="width: 100%; margin-top: 1rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">My Skills</h1>
+                    <p class="page-subtitle">Add and manage your technical skills</p>
+                </div>
+            </div>
+
+            <!-- Add New Skill -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Add New Skill</h2>
+                </div>
+                <div class="card-body">
+                    <form onsubmit="event.preventDefault(); addSkill();">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
+                            <div class="form-group" style="margin: 0;">
+                                <label for="skillName">Skill Name</label>
+                                <input type="text" id="skillName" placeholder="e.g., JavaScript, Python, React" required>
+                                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">Enter the name of the skill you want to add</p>
+                            </div>
+                            
+                            <div class="form-group" style="margin: 0;">
+                                <label for="skillLevel">Proficiency Level</label>
+                                <select id="skillLevel">
+                                    <option value="1">1 - Beginner</option>
+                                    <option value="2">2 - Elementary</option>
+                                    <option value="3" selected>3 - Intermediate</option>
+                                    <option value="4">4 - Advanced</option>
+                                    <option value="5">5 - Expert</option>
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="height: 48px;">Add Skill</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Proficiency Level Guide -->
+            <div class="card" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(14, 165, 233, 0.05));">
+                <div class="card-header">
+                    <h2 class="card-title">📖 Proficiency Level Guide</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-color);">1</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Beginner</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Basic understanding, can work with guidance</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-color);">2</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Elementary</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Can perform simple tasks independently</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-color);">3</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Intermediate</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Comfortable with most tasks, can handle moderate complexity</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-color);">4</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Advanced</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Proficient, can handle complex projects and mentor others</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem; align-items: start;">
+                            <div style="min-width: 40px; height: 40px; border-radius: 50%; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-color);">5</div>
+                            <div>
+                                <h4 style="font-weight: 600; margin-bottom: 0.25rem; color: var(--text-primary);">Expert</h4>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem;">Mastery level, recognized authority in this skill</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Skills -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Current Skills</h2>
+                    <span style="color: var(--text-secondary); font-size: 0.95rem;">Click × to remove a skill</span>
+                </div>
+                <div class="card-body">
+                    <div class="skills-container" id="skillsDisplay">
+                        <!-- Skills will be loaded by JavaScript -->
+                    </div>
+                    <div id="noSkillsMessage" style="display: none; text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">No skills added yet</h3>
+                        <p>Start building your skill profile by adding your first skill above</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggested Skills -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">💡 Popular Skills to Add</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='JavaScript'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>JavaScript</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Python'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Python</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Java'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Java</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='React'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>React</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Node.js'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Node.js</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='MySQL'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>MySQL</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='MongoDB'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>MongoDB</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Git'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Git</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Docker'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Docker</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='UI/UX Design'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>UI/UX Design</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Machine Learning'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Machine Learning</span>
+                        </button>
+                        <button class="skill-tag" onclick="document.getElementById('skillName').value='Data Analysis'; document.getElementById('skillName').focus();" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border-color)';">
+                            <span>Data Analysis</span>
+                        </button>
+                    </div>
+                    <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">Click on any skill above to quickly add it to the form</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
