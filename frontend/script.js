@@ -118,6 +118,9 @@ const mockInvitations = [
     }
 ];
 
+// Backend API base URL (update to your backend address)
+const API_BASE_URL = 'http://localhost:8080/api';
+
 // Current user role
 let currentUserRole = 'student';
 let currentStudent = mockStudents[0];
@@ -167,19 +170,61 @@ window.onclick = function(event) {
 }
 
 // Student Dashboard Functions
-function loadStudentProfile() {
-    if (!currentStudent) return;
-    
-    document.getElementById('studentName').textContent = currentStudent.name;
-    document.getElementById('studentEmail').textContent = currentStudent.email;
-    document.getElementById('studentDepartment').textContent = currentStudent.department;
-    document.getElementById('studentYear').textContent = currentStudent.year;
-    
-    const statusSelect = document.getElementById('availabilityStatus');
-    if (statusSelect) {
-        statusSelect.value = currentStudent.availabilityStatus;
+async function fetchStudentProfile() {
+    if (!API_BASE_URL) {
+        throw new Error('API_BASE_URL not configured');
     }
-    
+
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/1/profile`;
+    const resp = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+    });
+
+    if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        const err = new Error(`Failed to fetch profile: ${resp.status} ${resp.statusText} ${text}`);
+        err.status = resp.status;
+        throw err;
+    }
+
+    const data = await resp.json();
+    return data;
+}
+
+async function loadStudentProfile() {
+    const nameEl = document.getElementById('studentName');
+    const emailEl = document.getElementById('studentEmail');
+    const deptEl = document.getElementById('studentDepartment');
+    const yearEl = document.getElementById('studentYear');
+    const statusSelect = document.getElementById('availabilityStatus');
+
+    if (nameEl) nameEl.textContent = 'Loading...';
+
+    try {
+        const profile = API_BASE_URL ? await fetchStudentProfile() : null;
+        if (profile && profile.id) {
+            currentStudent = profile;
+        }
+    } catch (err) {
+        console.warn('Could not load profile from API, using mock data.', err);
+        if (err && err.status === 401) {
+            // Unauthorized - optionally redirect to login
+            // window.location.href = 'index.html';
+        }
+    }
+
+    if (!currentStudent) return;
+
+    if (nameEl) nameEl.textContent = currentStudent.name || '';
+    if (emailEl) emailEl.textContent = currentStudent.email || '';
+    if (deptEl) deptEl.textContent = currentStudent.department || '';
+    if (yearEl) yearEl.textContent = currentStudent.year || '';
+
+    if (statusSelect) {
+        statusSelect.value = currentStudent.availabilityStatus || '';
+    }
+
     displayStudentSkills();
 }
 
