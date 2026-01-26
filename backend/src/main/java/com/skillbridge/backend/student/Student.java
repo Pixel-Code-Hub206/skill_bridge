@@ -86,6 +86,10 @@ public class Student {
         return availabilityStatus;
     }
 
+    public List<StudentSkill> getSkills() {
+        return skills;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
