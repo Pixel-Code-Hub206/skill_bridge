@@ -5,8 +5,8 @@ const mockStudents = [
         name: "Hardik Verma",
         email: "hardik@example.com",
         department: "BCA",
-        year: "VI Semester",
-        availabilityStatus: "Available",
+        year: "THIRD_YEAR",
+        availabilityStatus: "AVAILABLE",
         skills: [
             { name: "JavaScript", level: 4 },
             { name: "React", level: 3 },
@@ -19,8 +19,8 @@ const mockStudents = [
         name: "Mayank",
         email: "mayank@example.com",
         department: "BCA",
-        year: "VI Semester",
-        availabilityStatus: "Available",
+        year: "THIRD_YEAR",
+        availabilityStatus: "AVAILABLE",
         skills: [
             { name: "Java", level: 5 },
             { name: "Spring Boot", level: 4 },
@@ -33,8 +33,8 @@ const mockStudents = [
         name: "Priya Sharma",
         email: "priya@example.com",
         department: "BCA",
-        year: "IV Semester",
-        availabilityStatus: "Busy",
+        year: "SECOND_YEAR",
+        availabilityStatus: "BUSY",
         skills: [
             { name: "UI/UX Design", level: 5 },
             { name: "Figma", level: 5 },
@@ -47,8 +47,8 @@ const mockStudents = [
         name: "Rahul Kumar",
         email: "rahul@example.com",
         department: "MCA",
-        year: "II Semester",
-        availabilityStatus: "Available",
+        year: "FIRST_YEAR",
+        availabilityStatus: "AVAILABLE",
         skills: [
             { name: "Python", level: 5 },
             { name: "Machine Learning", level: 4 },
@@ -61,8 +61,8 @@ const mockStudents = [
         name: "Ananya Patel",
         email: "ananya@example.com",
         department: "BCA",
-        year: "VI Semester",
-        availabilityStatus: "Open to Work",
+        year: "FOURTH_YEAR",
+        availabilityStatus: "OPEN_TO_WORK",
         skills: [
             { name: "React", level: 4 },
             { name: "TypeScript", level: 4 },
@@ -192,6 +192,20 @@ async function fetchStudentProfile() {
     return data;
 }
 
+// Fetch a student profile by id (used by teacher view)
+async function fetchStudentById(id) {
+    if (!API_BASE_URL) throw new Error('API_BASE_URL not configured');
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${id}/profile`;
+    const resp = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+    if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        const err = new Error(`Failed to fetch profile by id: ${resp.status} ${resp.statusText} ${text}`);
+        err.status = resp.status;
+        throw err;
+    }
+    return await resp.json();
+}
+
 async function loadStudentProfile() {
     const nameEl = document.getElementById('studentName');
     const emailEl = document.getElementById('studentEmail');
@@ -199,7 +213,9 @@ async function loadStudentProfile() {
     const yearEl = document.getElementById('studentYear');
     const statusSelect = document.getElementById('availabilityStatus');
 
-    if (nameEl) nameEl.textContent = 'Loading...';
+    // show loading placeholders
+    if (nameEl && 'value' in nameEl) nameEl.value = 'Loading...';
+    if (emailEl && 'value' in emailEl) emailEl.value = 'Loading...';
 
     try {
         const profile = API_BASE_URL ? await fetchStudentProfile() : null;
@@ -216,16 +232,79 @@ async function loadStudentProfile() {
 
     if (!currentStudent) return;
 
-    if (nameEl) nameEl.textContent = currentStudent.name || '';
-    if (emailEl) emailEl.textContent = currentStudent.email || '';
-    if (deptEl) deptEl.textContent = currentStudent.department || '';
-    if (yearEl) yearEl.textContent = currentStudent.year || '';
+    // helper to get flexible keys
+    const getFirst = (obj, keys) => {
+        for (const k of keys) {
+            if (obj && Object.prototype.hasOwnProperty.call(obj, k)) {
+                const v = obj[k];
+                if (v !== undefined && v !== null && String(v).toLowerCase() !== 'null' && String(v).trim() !== '') return String(v).trim();
+            }
+        }
+        return null;
+    };
 
+    const nameVal = getFirst(currentStudent, ['name', 'fullName', 'full_name', 'displayName']);
+    const emailVal = getFirst(currentStudent, ['email', 'emailAddress', 'email_address']);
+
+    if (nameEl) {
+        if ('value' in nameEl) nameEl.value = nameVal || '';
+        else nameEl.textContent = nameVal || '';
+    }
+    if (emailEl) {
+        if ('value' in emailEl) emailEl.value = emailVal || '';
+        else emailEl.textContent = emailVal || '';
+    }
+
+    // populate sidebar name/avatar if present (different pages use different ids)
+    const sidebarNameEl = document.getElementById('sidebarUserName') || document.getElementById('studentName');
+    const sidebarAvatarEl = document.getElementById('sidebarAvatar') || document.querySelector('.user-avatar');
+    if (sidebarNameEl) {
+        const displayName = nameVal || getFirst(currentStudent, ['name']) || '';
+        if ('value' in sidebarNameEl) sidebarNameEl.value = displayName;
+        else sidebarNameEl.textContent = displayName;
+    }
+    if (sidebarAvatarEl) {
+        const displayName = nameVal || getFirst(currentStudent, ['name']) || '';
+        const initials = displayName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0,2).join('') || 'U';
+        sidebarAvatarEl.textContent = initials;
+    }
+
+    // set selects — API should return enum values matching option `value`s (e.g. BCA, FIRST_YEAR, AVAILABLE)
+    const deptVal = getFirst(currentStudent, ['department', 'dept', 'departmentName']);
+    const yearVal = getFirst(currentStudent, ['year', 'academicYear', 'academic_year']);
+    const availabilityVal = getFirst(currentStudent, ['availabilityStatus', 'availability', 'status']);
+
+    // safely set select values (if option exists)
+    const safeSetSelect = (selectEl, val) => {
+        if (!selectEl || !val) return;
+        const opt = Array.from(selectEl.options).find(o => o.value === val);
+        if (opt) selectEl.value = val;
+        else {
+            // try matching by display text (case-insensitive)
+            const byText = Array.from(selectEl.options).find(o => o.text.toLowerCase() === String(val).toLowerCase());
+            if (byText) selectEl.value = byText.value;
+        }
+    };
+
+    if (deptEl) {
+        if (deptEl.tagName === 'SELECT') safeSetSelect(deptEl, deptVal || currentStudent.department);
+        else deptEl.textContent = humanizeDepartment(deptVal || currentStudent.department);
+    }
+    if (yearEl) {
+        if (yearEl.tagName === 'SELECT') safeSetSelect(yearEl, yearVal || currentStudent.year);
+        else yearEl.textContent = humanizeYear(yearVal || currentStudent.year);
+    }
     if (statusSelect) {
-        statusSelect.value = currentStudent.availabilityStatus || '';
+        if (statusSelect.tagName === 'SELECT') safeSetSelect(statusSelect, availabilityVal || currentStudent.availabilityStatus);
+        else {
+            // element may be a span/badge
+            statusSelect.textContent = humanizeAvailability(availabilityVal || currentStudent.availabilityStatus);
+            statusSelect.className = availabilityBadgeClass(availabilityVal || currentStudent.availabilityStatus);
+        }
     }
 
     displayStudentSkills();
+    try { populateSocialLinks(); } catch (e) {}
 }
 
 function displayStudentSkills() {
@@ -233,11 +312,16 @@ function displayStudentSkills() {
     if (!container) return;
     
     container.innerHTML = '';
-    
-    currentStudent.skills.forEach(skill => {
+    const skills = (currentStudent.skills || []);
+    (skills).forEach(skill => {
         const skillTag = createSkillTag(skill, true);
         container.appendChild(skillTag);
     });
+
+    const noSkillsMessage = document.getElementById('noSkillsMessage');
+    if (noSkillsMessage) {
+        noSkillsMessage.style.display = skills.length === 0 ? 'block' : 'none';
+    }
 }
 
 function createSkillTag(skill, showRemove = false) {
@@ -290,11 +374,89 @@ function removeSkill(skillName) {
 }
 
 function updateProfile() {
-    currentStudent.department = document.getElementById('studentDepartment').value;
-    currentStudent.year = document.getElementById('studentYear').value;
-    currentStudent.availabilityStatus = document.getElementById('availabilityStatus').value;
-    
-    showNotification('Profile updated successfully!', 'success');
+    // gather values from form selects (select `value`s are backend enum keys)
+    const dept = document.getElementById('studentDepartment') ? document.getElementById('studentDepartment').value : null;
+    const year = document.getElementById('studentYear') ? document.getElementById('studentYear').value : null;
+    const availability = document.getElementById('availabilityStatus') ? document.getElementById('availabilityStatus').value : null;
+
+    const payload = {};
+    if (dept) payload.department = dept;
+    if (year) payload.year = year;
+    if (availability) payload.availabilityStatus = availability;
+
+    const studentId = currentStudent && currentStudent.id ? currentStudent.id : 1;
+
+    if (!API_BASE_URL) {
+        // update local mock
+        if (payload.department) currentStudent.department = payload.department;
+        if (payload.year) currentStudent.year = payload.year;
+        if (payload.availabilityStatus) currentStudent.availabilityStatus = payload.availabilityStatus;
+        showNotification('Profile updated locally (mock).', 'success');
+        return;
+    }
+
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${studentId}/profile`;
+    fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(async resp => {
+        if (!resp.ok) {
+            const txt = await resp.text().catch(() => '');
+            throw new Error(`Update failed: ${resp.status} ${resp.statusText} ${txt}`);
+        }
+        const updated = await resp.json().catch(() => null);
+        if (updated) currentStudent = Object.assign({}, currentStudent, updated);
+        showNotification('Profile updated successfully!', 'success');
+        try { populateSocialLinks(); } catch (e) {}
+    }).catch(err => {
+        console.error(err);
+        showNotification('Failed to update profile. See console.', 'danger');
+    });
+}
+
+// Populate social/professional links with real URLs or example placeholders
+function populateSocialLinks() {
+    if (!currentStudent) return;
+    const EXAMPLES = {
+        socialGithub: 'https://github.com/username',
+        socialLinkedIn: 'https://linkedin.com/in/username',
+        socialPortfolio: 'https://your-portfolio.example.com',
+        socialBehance: 'https://behance.net/username'
+    };
+
+    const FIELDS = {
+        socialGithub: ['github', 'githubUrl', 'github_url', 'github_link'],
+        socialLinkedIn: ['linkedin', 'linkedinUrl', 'linkedin_url', 'linkedin_link'],
+        socialPortfolio: ['portfolio', 'portfolioUrl', 'portfolio_url', 'website', 'websiteUrl'],
+        socialBehance: ['behance', 'behanceUrl', 'behance_url', 'behance_link']
+    };
+
+    Object.keys(FIELDS).forEach(elId => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        const keys = FIELDS[elId];
+        let val = null;
+        for (const k of keys) {
+            const v = currentStudent[k];
+            if (v !== undefined && v !== null && String(v).toLowerCase() !== 'null' && String(v).trim() !== '') { val = String(v).trim(); break; }
+        }
+        if (val) {
+            el.href = val;
+            el.style.display = 'inline-flex';
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+            const label = el.querySelector('span:last-child'); if (label) label.textContent = elId === 'socialGithub' ? 'GitHub' : elId === 'socialLinkedIn' ? 'LinkedIn' : elId === 'socialPortfolio' ? 'Portfolio' : 'Behance';
+        } else {
+            const example = EXAMPLES[elId];
+            el.href = example;
+            el.title = 'Example: ' + example;
+            el.style.display = 'inline-flex';
+            el.style.opacity = '0.65';
+            el.style.pointerEvents = 'none';
+            const label = el.querySelector('span:last-child'); if (label) label.textContent = 'Example: ' + example;
+        }
+    });
 }
 
 function loadStudentInvitations() {
@@ -431,7 +593,7 @@ function displaySearchResults(students) {
         card.onmouseover = function() { this.style.transform = 'translateY(-4px)'; this.style.boxShadow = 'var(--shadow-md)'; };
         card.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'var(--shadow-sm)'; };
         
-        const skillsHTML = student.skills.map(skill => {
+        const skillsHTML = (student.skills || []).map(skill => {
             const levels = Array.from({length: 5}, (_, i) => 
                 `<span class="level-dot ${i < skill.level ? 'filled' : ''}"></span>`
             ).join('');
@@ -443,15 +605,18 @@ function displaySearchResults(students) {
             `;
         }).join('');
         
+        const humanDept = humanizeDepartment(student.department);
+        const humanYear = humanizeYear(student.year);
+        const humanAvailability = humanizeAvailability(student.availabilityStatus);
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                 <div>
                     <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem;">${student.name}</h3>
                     <p style="color: var(--text-secondary); font-size: 0.9rem;">${student.email}</p>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem;">${student.department} - ${student.year}</p>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">${humanDept} - ${humanYear}</p>
                 </div>
-                <span class="badge badge-${student.availabilityStatus === 'Available' ? 'success' : student.availabilityStatus === 'Busy' ? 'warning' : 'info'}">
-                    ${student.availabilityStatus}
+                <span class="${availabilityBadgeClass(student.availabilityStatus)}">
+                    ${humanAvailability}
                 </span>
             </div>
             <div style="margin-bottom: 1rem;">
@@ -515,28 +680,43 @@ function loadMyProjects() {
     });
 }
 
-function loadStudentProfileView() {
+async function loadStudentProfileView() {
     const studentId = parseInt(localStorage.getItem('viewStudentId'));
-    const student = mockStudents.find(s => s.id === studentId);
-    
+    if (!studentId) {
+        document.body.innerHTML = '<p>Student not found</p>';
+        return;
+    }
+
+    let student = null;
+    if (API_BASE_URL) {
+        try {
+            student = await fetchStudentById(studentId);
+        } catch (err) {
+            console.warn('Could not fetch student from API, falling back to mock data.', err);
+            student = mockStudents.find(s => s.id === studentId);
+        }
+    } else {
+        student = mockStudents.find(s => s.id === studentId);
+    }
+
     if (!student) {
         document.body.innerHTML = '<p>Student not found</p>';
         return;
     }
-    
-    document.getElementById('viewStudentName').textContent = student.name;
-    document.getElementById('viewStudentEmail').textContent = student.email;
-    document.getElementById('viewStudentDepartment').textContent = student.department;
-    document.getElementById('viewStudentYear').textContent = student.year;
-    
+
+    document.getElementById('viewStudentName').textContent = student.name || '';
+    document.getElementById('viewStudentEmail').textContent = student.email || '';
+    document.getElementById('viewStudentDepartment').textContent = humanizeDepartment(student.department);
+    document.getElementById('viewStudentYear').textContent = humanizeYear(student.year);
+
     const statusBadge = document.getElementById('viewStudentStatus');
-    statusBadge.textContent = student.availabilityStatus;
-    statusBadge.className = `badge badge-${student.availabilityStatus === 'Available' ? 'success' : student.availabilityStatus === 'Busy' ? 'warning' : 'info'}`;
-    
+    statusBadge.textContent = humanizeAvailability(student.availabilityStatus);
+    statusBadge.className = availabilityBadgeClass(student.availabilityStatus);
+
     const skillsContainer = document.getElementById('viewStudentSkills');
     skillsContainer.innerHTML = '';
-    
-    student.skills.forEach(skill => {
+
+    (student.skills || []).forEach(skill => {
         const skillTag = createSkillTag(skill, false);
         skillsContainer.appendChild(skillTag);
     });
@@ -567,6 +747,44 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
+// Helpers to convert backend enum values to human-friendly labels
+function humanizeAvailability(av) {
+    if (!av) return '';
+    const m = String(av).toUpperCase();
+    if (m === 'AVAILABLE') return 'Available';
+    if (m === 'BUSY') return 'Busy';
+    if (m === 'OPEN_TO_WORK') return 'Open to Work';
+    return av;
+}
+
+function availabilityBadgeClass(av) {
+    const m = String(av || '').toUpperCase();
+    if (m === 'AVAILABLE') return 'badge badge-success';
+    if (m === 'BUSY') return 'badge badge-warning';
+    if (m === 'OPEN_TO_WORK') return 'badge badge-info';
+    return 'badge badge-secondary';
+}
+
+function humanizeYear(y) {
+    if (!y) return '';
+    const m = String(y).toUpperCase();
+    if (m === 'FIRST_YEAR') return 'First Year';
+    if (m === 'SECOND_YEAR') return 'Second Year';
+    if (m === 'THIRD_YEAR') return 'Third Year';
+    if (m === 'FOURTH_YEAR') return 'Fourth Year';
+    return y;
+}
+
+function humanizeDepartment(d) {
+    if (!d) return '';
+    const m = String(d).toUpperCase();
+    if (m === 'BCA') return 'BCA';
+    if (m === 'MCA') return 'MCA';
+    if (m === 'BSC') return 'BSc';
+    if (m === 'MSC') return 'MSc';
+    return d;
+}
+
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
         window.location.href = 'index.html';
@@ -579,7 +797,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (path.includes('student-dashboard.html')) {
         loadStudentProfile();
+    } else if (path.includes('student-profile.html')) {
+        loadStudentProfile();
+    } else if (path.includes('student-skills.html')) {
+        loadStudentProfile();
     } else if (path.includes('student-invitations.html')) {
+        // populate sidebar/profile first, then invitations
+        loadStudentProfile();
         loadStudentInvitations();
     } else if (path.includes('teacher-search.html')) {
         displaySearchResults(mockStudents);

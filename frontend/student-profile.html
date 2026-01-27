@@ -43,9 +43,9 @@
             
             <div class="sidebar-footer">
                 <div class="user-profile">
-                    <div class="user-avatar">HV</div>
+                    <div class="user-avatar" id="sidebarAvatar">HV</div>
                     <div class="user-info">
-                        <h4>Hardik Verma</h4>
+                        <h4 id="sidebarUserName">Hardik Verma</h4>
                         <p>Student</p>
                     </div>
                 </div>
@@ -54,11 +54,45 @@
         </aside>
 
         <!-- Main Content -->
+        <!-- Social / Professional Links (optional fields from backend) -->
+        <!-- Display GitHub, LinkedIn, Portfolio and Behance links if available -->
+
         <main class="main-content">
             <div class="top-bar">
                 <div>
                     <h1 class="page-title">My Profile</h1>
                     <p class="page-subtitle">Manage your personal information</p>
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Social & Professional Links</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">Optional: share your GitHub, LinkedIn, Portfolio or Behance profiles.</p>
+                    <div id="socialLinksContainer" style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                        <a id="socialGithub" href="#" target="_blank" rel="noopener" style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">🐙</span>
+                            <span>GitHub</span>
+                        </a>
+
+                        <a id="socialLinkedIn" href="#" target="_blank" rel="noopener" style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">💼</span>
+                            <span>LinkedIn</span>
+                        </a>
+
+                        <a id="socialPortfolio" href="#" target="_blank" rel="noopener" style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">🌐</span>
+                            <span>Portfolio</span>
+                        </a>
+
+                        <a id="socialBehance" href="#" target="_blank" rel="noopener" style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">🎨</span>
+                            <span>Behance</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -85,27 +119,27 @@
                                 <select id="studentDepartment">
                                     <option value="BCA" selected>BCA</option>
                                     <option value="MCA">MCA</option>
-                                    <option value="B.Tech CS">B.Tech CS</option>
-                                    <option value="M.Tech CS">M.Tech CS</option>
+                                    <option value="BSC">BSc</option>
+                                    <option value="MSC">MSc</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
                                 <label for="studentYear">Academic Year</label>
                                 <select id="studentYear">
-                                    <option value="II Semester">II Semester</option>
-                                    <option value="IV Semester">IV Semester</option>
-                                    <option value="VI Semester" selected>VI Semester</option>
-                                    <option value="VIII Semester">VIII Semester</option>
+                                    <option value="FIRST_YEAR">First Year</option>
+                                    <option value="SECOND_YEAR">Second Year</option>
+                                    <option value="THIRD_YEAR" selected>Third Year</option>
+                                    <option value="FOURTH_YEAR">Fourth Year</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
                                 <label for="availabilityStatus">Availability Status</label>
                                 <select id="availabilityStatus">
-                                    <option value="Available" selected>Available</option>
-                                    <option value="Busy">Busy</option>
-                                    <option value="Open to Work">Open to Work</option>
+                                    <option value="AVAILABLE" selected>Available</option>
+                                    <option value="BUSY">Busy</option>
+                                    <option value="OPEN_TO_WORK">Open to Work</option>
                                 </select>
                             </div>
                         </div>
