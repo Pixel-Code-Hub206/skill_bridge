@@ -45,6 +45,10 @@ public class StudentController {
                 student.getDepartment(),
                 student.getAcademicYear(),
                 student.getAvailabilityStatus(),
+                student.getGithubUrl(),
+                student.getLinkedinUrl(),
+                student.getPortfolioUrl(),
+                student.getBehanceUrl(),
                 skillDTOs
         );
     }

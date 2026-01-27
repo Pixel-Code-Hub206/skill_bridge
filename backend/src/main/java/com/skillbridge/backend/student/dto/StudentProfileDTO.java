@@ -16,6 +16,12 @@ public class StudentProfileDTO {
     private AvailabilityStatus availabilityStatus;
     private List<StudentSkillDTO> skills;
 
+    //Optional fields with links
+    private String githubUrl;
+    private String linkedinUrl;
+    private String portfolioUrl;
+    private String behanceUrl;
+
     public StudentProfileDTO(
             Long id,
             String name,
@@ -23,6 +29,10 @@ public class StudentProfileDTO {
             Department department,
             AcademicYear academicYear,
             AvailabilityStatus availabilityStatus,
+            String githubUrl,
+            String linkedinUrl,
+            String portfolioUrl,
+            String behanceUrl,
             List<StudentSkillDTO> skills
     ) {
         this.id = id;
@@ -31,6 +41,10 @@ public class StudentProfileDTO {
         this.department = department;
         this.academicYear = academicYear;
         this.availabilityStatus = availabilityStatus;
+        this.githubUrl = githubUrl;
+        this.linkedinUrl = linkedinUrl;
+        this.portfolioUrl = portfolioUrl;
+        this.behanceUrl = behanceUrl;
         this.skills = skills;
     }
 
@@ -56,6 +70,22 @@ public class StudentProfileDTO {
 
     public AvailabilityStatus getAvailabilityStatus() {
         return availabilityStatus;
+    }
+
+    public String getGithubUrl() {
+        return githubUrl;
+    }
+
+    public String getLinkedinUrl() {
+        return linkedinUrl;
+    }
+
+    public String getPortfolioUrl() {
+        return portfolioUrl;
+    }
+
+    public String getBehanceUrl() {
+        return behanceUrl;
     }
 
     public List<StudentSkillDTO> getSkills() {
