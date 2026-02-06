@@ -1,10 +1,13 @@
 package com.skillbridge.backend.project;
 
+import com.skillbridge.backend.project.dto.MatchedStudentsDTO;
 import com.skillbridge.backend.project.dto.ProjectCreateRequest;
 import com.skillbridge.backend.skill.Skill;
 import com.skillbridge.backend.skill.SkillRepository;
+import com.skillbridge.backend.student.StudentRepository;
 import com.skillbridge.backend.teacher.Teacher;
 import com.skillbridge.backend.teacher.TeacherRepository;
+import jakarta.persistence.Table;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,15 +20,18 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
     private final TeacherRepository teacherRepository;
     private final SkillRepository skillRepository;
+    private final StudentRepository studentRepository;
 
     public ProjectController(
             ProjectRepository projectRepository,
             TeacherRepository teacherRepository,
-            SkillRepository skillRepository
+            SkillRepository skillRepository,
+            StudentRepository studentRepository
     ) {
        this.projectRepository = projectRepository;
        this.teacherRepository = teacherRepository;
        this.skillRepository = skillRepository;
+       this.studentRepository = studentRepository;
     }
 
     @PostMapping
@@ -54,5 +60,45 @@ public class ProjectController {
     @GetMapping("/teacher/{teacherId}")
     public List<Project> getProjectsByTeacher(@PathVariable Long teacherId) {
         return projectRepository.findByTeacherId(teacherId);
+    }
+
+    @GetMapping("/{projectId}/matched-student")
+    public List<MatchedStudentsDTO> getMatchedStudents(
+            @PathVariable Long projectId,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) String academicYear,
+            @RequestParam(required = false) String availabilityStatus,
+            @RequestParam(required = false) String skill
+    ) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        List<String> requiredSkillNames = project.getRequiredSkills()
+                .stream()
+                .map(s -> s.getName())
+                .toList();
+
+        return studentRepository.findAll().stream()
+                .map(student -> {
+                    List<String> matchedSkills = student.getSkills().stream()
+                            .map(ss -> ss.getSkill().getName())
+                            .filter(requiredSkillNames::contains)
+                            .toList();
+
+                    return new MatchedStudentsDTO(
+                            student.getId(),
+                            student.getName(),
+                            student.getDepartment().name(),
+                            student.getAcademicYear().name(),
+                            student.getAvailabilityStatus().name(),
+                            matchedSkills
+                    );
+                })
+                .filter(dto -> dto != null)
+                .filter(dto -> department == null || dto.getDepartment().equals(department))
+                .filter(dto -> academicYear == null || dto.getAcademicYear().equals(academicYear))
+                .filter(dto -> availabilityStatus == null || dto.getAvailabilityStatus().equals(availabilityStatus))
+                .filter(dto -> skill == null || dto.getMatchedSkills().contains(skill))
+                .toList();
     }
 }
