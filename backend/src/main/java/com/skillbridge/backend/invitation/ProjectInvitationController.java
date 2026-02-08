@@ -29,6 +29,7 @@ public class ProjectInvitationController {
     }
 
     //Teacher sends invitation
+    @PostMapping
     public ProjectInvitation sendInvitation(
             @RequestBody InvitationCreateRequest request) {
 
@@ -62,7 +63,7 @@ public class ProjectInvitationController {
     }
 
     //Student responds
-    @PostMapping("{invitationId}/accept")
+    @PostMapping("/{invitationId}/accept")
     public ProjectInvitation acceptInvitation(
             @PathVariable Long invitationId) {
 
