@@ -212,7 +212,8 @@ async function handleLogin(event) {
         const roleFromResp = data.role || data.userRole || currentUserRole;
         const userId = data.userId || data.id || (data.user && data.user.id);
 
-        if (token) saveAuthData({ token, role: roleFromResp, userId });
+        // Always persist role and userId even if backend didn't return a token
+        saveAuthData({ token, role: roleFromResp, userId });
 
         closeLoginModal();
         const roleToUse = (roleFromResp || currentUserRole || '').toString().toLowerCase();
@@ -240,7 +241,10 @@ async function fetchStudentProfile() {
         throw new Error('API_BASE_URL not configured');
     }
 
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/1/profile`;
+    // prefer the logged-in userId saved during login
+    const storedId = localStorage.getItem('userId');
+    const studentId = storedId ? parseInt(storedId, 10) : 1;
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${studentId}/profile`;
     const resp = await fetch(url, {
         method: 'GET',
         headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
@@ -261,7 +265,7 @@ async function fetchStudentProfile() {
 async function fetchStudentById(id) {
     if (!API_BASE_URL) throw new Error('API_BASE_URL not configured');
     const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${id}/profile`;
-    const resp = await fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } });
+    const resp = await fetch(url, { method: 'GET', headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders()) });
     if (!resp.ok) {
         const text = await resp.text().catch(() => '');
         const err = new Error(`Failed to fetch profile by id: ${resp.status} ${resp.statusText} ${text}`);
@@ -558,13 +562,13 @@ function respondToInvitation(invitationId, response) {
 }
 
 // Teacher Dashboard Functions
-function createProject(event) {
+async function createProject(event) {
     event.preventDefault();
-    
+
     const title = document.getElementById('projectTitle').value;
     const description = document.getElementById('projectDescription').value;
     const deadline = document.getElementById('projectDeadline').value;
-    
+
     // Get required skills
     const requiredSkills = [];
     const skillInputs = document.querySelectorAll('.required-skill-item');
@@ -575,25 +579,50 @@ function createProject(event) {
             requiredSkills.push({ name: skillName, minLevel: minLevel });
         }
     });
-    
-    const newProject = {
-        id: mockProjects.length + 1,
+
+    const teacherId = localStorage.getItem('userId') ? parseInt(localStorage.getItem('userId'), 10) : null;
+
+    if (!API_BASE_URL) {
+        showNotification('API base URL not configured.', 'danger');
+        return;
+    }
+    if (!teacherId) {
+        showNotification('Teacher not authenticated. Please login.', 'danger');
+        return;
+    }
+
+    const payload = {
         title,
         description,
+        deadline: deadline || null,
         requiredSkills,
-        deadline,
-        teacherName: "Example teacher"
+        requiredSkillIds: [],
+        teacherId
     };
-    
-    mockProjects.push(newProject);
-    
-    document.getElementById('createProjectForm').reset();
-    showNotification('Project created successfully!', 'success');
-    
-    // Redirect to search page
-    setTimeout(() => {
-        window.location.href = 'teacher-search.html';
-    }, 1500);
+
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/projects`;
+    try {
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, getAuthHeaders()),
+            body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+            const txt = await resp.text().catch(() => '');
+            console.error('Create project failed', resp.status, resp.statusText, txt);
+            showNotification('Failed to create project. See console.', 'danger');
+            return;
+        }
+
+        const created = await resp.json().catch(() => null);
+        document.getElementById('createProjectForm').reset();
+        showNotification('Project created successfully!', 'success');
+        setTimeout(() => { window.location.href = 'teacher-search.html'; }, 1200);
+    } catch (err) {
+        console.error('Create project error', err);
+        showNotification('Error creating project. See console.', 'danger');
+    }
 }
 
 function addRequiredSkill() {
