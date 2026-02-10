@@ -125,6 +125,29 @@ const API_BASE_URL = 'http://localhost:8080/api';
 let currentUserRole = 'student';
 let currentStudent = mockStudents[0];
 
+// Authentication helpers
+function getStoredAuthToken() {
+    return localStorage.getItem('authToken');
+}
+
+function saveAuthData({ token, role, userId } = {}) {
+    if (token) localStorage.setItem('authToken', token);
+    if (role) localStorage.setItem('userRole', role);
+    if (userId) localStorage.setItem('userId', String(userId));
+}
+
+function clearAuthData() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
+}
+
+function getAuthHeaders() {
+    const token = getStoredAuthToken();
+    if (!token) return {};
+    return { 'Authorization': `Bearer ${token}` };
+}
+
 // Login Modal Functions
 function showLoginModal(role) {
     currentUserRole = role;
@@ -145,19 +168,61 @@ function closeLoginModal() {
     modal.style.display = 'none';
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
-    const email = document.getElementById('email').value;
+    const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
-    // Simple validation (in production, this would be API call)
-    if (email && password) {
+
+    if (!username || !password) {
+        showNotification('Please enter username and password', 'danger');
+        return false;
+    }
+
+    if (!API_BASE_URL) {
+        // Fallback to mock behavior
         closeLoginModal();
-        if (currentUserRole === 'student') {
-            window.location.href = 'student-dashboard.html';
-        } else {
-            window.location.href = 'teacher-dashboard.html';
+        if (currentUserRole === 'student') window.location.href = 'student-dashboard.html';
+        else window.location.href = 'teacher-dashboard.html';
+        return false;
+    }
+
+    const url =
+        currentUserRole === 'student'
+            ? 'http://localhost:8080/api/auth/student/login'
+            : 'http://localhost:8080/api/auth/teacher/login';
+    try {
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username: username, password: password })
+        });
+
+        if (!resp.ok) {
+            if (resp.status === 401) showNotification('Invalid credentials', 'danger');
+            else showNotification('Login failed. See console.', 'danger');
+            console.error('Login failed', resp.status, resp.statusText);
+            return false;
         }
+
+        const data = await resp.json().catch(() => ({}));
+        const token = data.token || data.accessToken || data.authToken || data.jwt;
+        const roleFromResp = data.role || data.userRole || currentUserRole;
+        const userId = data.userId || data.id || (data.user && data.user.id);
+
+        if (token) saveAuthData({ token, role: roleFromResp, userId });
+
+        closeLoginModal();
+        const roleToUse = (roleFromResp || currentUserRole || '').toString().toLowerCase();
+        if (roleToUse.includes('teacher')) window.location.href = 'teacher-dashboard.html';
+        else window.location.href = 'student-dashboard.html';
+        return false;
+    } catch (err) {
+        console.error('Login error', err);
+        showNotification('Login error. See console.', 'danger');
+        return false;
     }
 }
 
@@ -178,7 +243,7 @@ async function fetchStudentProfile() {
     const url = `${API_BASE_URL.replace(/\/$/, '')}/students/1/profile`;
     const resp = await fetch(url, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
     });
 
     if (!resp.ok) {
@@ -398,7 +463,7 @@ function updateProfile() {
     const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${studentId}/profile`;
     fetch(url, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, getAuthHeaders()),
         body: JSON.stringify(payload)
     }).then(async resp => {
         if (!resp.ok) {
@@ -787,6 +852,7 @@ function humanizeDepartment(d) {
 
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
+        clearAuthData();
         window.location.href = 'index.html';
     }
 }
