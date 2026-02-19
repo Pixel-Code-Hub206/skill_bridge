@@ -3,6 +3,7 @@ package com.skillbridge.backend.studentskill;
 import com.skillbridge.backend.skill.Skill;
 import com.skillbridge.backend.student.Student;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(
@@ -18,6 +19,7 @@ public class StudentSkill {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "student_id")
+    @JsonIgnore
     private Student student;
 
     @ManyToOne(optional = false)
