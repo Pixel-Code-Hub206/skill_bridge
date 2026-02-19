@@ -245,19 +245,28 @@ async function fetchStudentProfile() {
     const storedId = localStorage.getItem('userId');
     const studentId = storedId ? parseInt(storedId, 10) : 1;
     const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${studentId}/profile`;
+    
+    console.log('🌐 Fetching student profile from:', url);
+    const authHeaders = getAuthHeaders();
+    console.log('🔐 Auth headers:', Object.keys(authHeaders).length > 0 ? 'Present' : 'None');
+    
     const resp = await fetch(url, {
         method: 'GET',
-        headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
+        headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
     });
+
+    console.log('📊 Profile API Response status:', resp.status, resp.statusText);
 
     if (!resp.ok) {
         const text = await resp.text().catch(() => '');
+        console.error('❌ Profile fetch error:', resp.status, text);
         const err = new Error(`Failed to fetch profile: ${resp.status} ${resp.statusText} ${text}`);
         err.status = resp.status;
         throw err;
     }
 
     const data = await resp.json();
+    console.log('✅ Profile data received:', data);
     return data;
 }
 
@@ -287,19 +296,31 @@ async function loadStudentProfile() {
     if (emailEl && 'value' in emailEl) emailEl.value = 'Loading...';
 
     try {
+        console.log('📋 Starting profile load, API_BASE_URL:', API_BASE_URL);
         const profile = API_BASE_URL ? await fetchStudentProfile() : null;
         if (profile && profile.id) {
             currentStudent = profile;
+            console.log('✅ Profile loaded successfully:', currentStudent);
+        } else {
+            console.warn('⚠️ No profile or ID in response:', profile);
         }
     } catch (err) {
-        console.warn('Could not load profile from API, using mock data.', err);
+        console.error('❌ Failed to load profile from API:', err.message, err);
         if (err && err.status === 401) {
+            console.warn('⚠️ Unauthorized - user not logged in');
             // Unauthorized - optionally redirect to login
             // window.location.href = 'index.html';
+        } else {
+            console.warn('Using mock data as fallback');
         }
     }
 
-    if (!currentStudent) return;
+    if (!currentStudent) {
+        console.error('❌ No student data available - profile load failed');
+        if (nameEl && 'value' in nameEl) nameEl.value = 'Error loading profile';
+        if (emailEl && 'value' in emailEl) emailEl.value = 'Please check console for details';
+        return;
+    }
 
     // helper to get flexible keys
     const getFirst = (obj, keys) => {
@@ -397,14 +418,18 @@ function createSkillTag(skill, showRemove = false) {
     const tag = document.createElement('div');
     tag.className = 'skill-tag';
     
+    // Handle both old format (skill.name) and new backend format (skill.skill.name)
+    const skillName = skill.skill?.name || skill.name || 'Unknown';
+    const proficiency = skill.proficiency || skill.level || 1;
+    
     const levels = Array.from({length: 5}, (_, i) => 
-        `<span class="level-dot ${i < skill.level ? 'filled' : ''}"></span>`
+        `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
     ).join('');
     
     tag.innerHTML = `
-        <span>${skill.name}</span>
+        <span>${skillName}</span>
         <span class="skill-level">${levels}</span>
-        ${showRemove ? '<span class="remove-skill" onclick="removeSkill(\'' + skill.name + '\')">&times;</span>' : ''}
+        ${showRemove ? '<span class="remove-skill" onclick="removeSkill(\'' + skillName + '\')">&times;</span>' : ''}
     `;
     
     return tag;
@@ -419,14 +444,18 @@ function addSkill() {
         return;
     }
     
-    // Check if skill already exists
-    const exists = currentStudent.skills.some(s => s.name.toLowerCase() === skillName.toLowerCase());
+    // Check if skill already exists (handle both old and new format)
+    const exists = currentStudent.skills.some(s => {
+        const existingName = (s.skill?.name || s.name || '').toLowerCase();
+        return existingName === skillName.toLowerCase();
+    });
     if (exists) {
         alert('This skill already exists in your profile');
         return;
     }
     
-    currentStudent.skills.push({ name: skillName, level: skillLevel });
+    // Add skill in backend format: { skill: { name }, proficiency }
+    currentStudent.skills.push({ skill: { name: skillName }, proficiency: skillLevel });
     displayStudentSkills();
     
     // Clear inputs
@@ -437,7 +466,11 @@ function addSkill() {
 }
 
 function removeSkill(skillName) {
-    currentStudent.skills = currentStudent.skills.filter(s => s.name !== skillName);
+    // Handle both old format (s.name) and new backend format (s.skill.name)
+    currentStudent.skills = currentStudent.skills.filter(s => {
+        const name = s.skill?.name || s.name;
+        return name !== skillName;
+    });
     displayStudentSkills();
     showNotification('Skill removed successfully!', 'success');
 }
@@ -528,36 +561,137 @@ function populateSocialLinks() {
     });
 }
 
-function loadStudentInvitations() {
-    const tbody = document.getElementById('invitationsTableBody');
-    if (!tbody) return;
+async function fetchStudentInvitations() {
+    if (!API_BASE_URL) {
+        throw new Error('API_BASE_URL not configured');
+    }
+
+    const storedId = localStorage.getItem('userId');
+    const studentId = storedId ? parseInt(storedId, 10) : 1;
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/invitations/student/${studentId}`;
     
-    tbody.innerHTML = '';
+    console.log('🌐 Calling API:', url);
     
-    mockInvitations.forEach(invitation => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${invitation.projectTitle}</td>
-            <td>${invitation.teacherName}</td>
-            <td>${invitation.sentDate}</td>
-            <td><span class="badge badge-${invitation.status === 'Pending' ? 'warning' : invitation.status === 'Accepted' ? 'success' : 'danger'}">${invitation.status}</span></td>
-            <td>
-                ${invitation.status === 'Pending' ? `
-                    <button class="btn btn-success btn-sm" onclick="respondToInvitation(${invitation.id}, 'Accepted')">Accept</button>
-                    <button class="btn btn-danger btn-sm" onclick="respondToInvitation(${invitation.id}, 'Rejected')">Reject</button>
-                ` : '-'}
-            </td>
-        `;
-        tbody.appendChild(tr);
+    const resp = await fetch(url, {
+        method: 'GET',
+        headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
     });
+
+    console.log('📊 API Response status:', resp.status);
+
+    if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        const err = new Error(`Failed to fetch invitations: ${resp.status} ${resp.statusText} ${text}`);
+        err.status = resp.status;
+        throw err;
+    }
+
+    const data = await resp.json();
+    console.log('✨ Invitations data:', data);
+    return data;
 }
 
-function respondToInvitation(invitationId, response) {
-    const invitation = mockInvitations.find(inv => inv.id === invitationId);
-    if (invitation) {
-        invitation.status = response;
+function loadStudentInvitations() {
+    console.log("🔥 loadStudentInvitations called");
+    const tbody = document.getElementById('invitationsTableBody');
+    
+    if (!tbody) {
+        console.error('❌ invitationsTableBody element not found on the page');
+        return;
+    }
+    
+    console.log('✅ invitationsTableBody found, starting to load invitations');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading invitations...</td></tr>';
+    
+    if (!API_BASE_URL) {
+        console.log('⚠️ No API_BASE_URL configured, using mock data');
+        // fallback to mock data if no API configured
+        tbody.innerHTML = '';
+        mockInvitations.forEach(invitation => {
+            renderInvitationRow(tbody, invitation);
+        });
+        return;
+    }
+
+    console.log('📡 Fetching invitations from API:', API_BASE_URL);
+    fetchStudentInvitations()
+        .then(invitations => {
+            console.log('📥 Invitations received:', invitations);
+            tbody.innerHTML = '';
+            if (!invitations || invitations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">No invitations yet</td></tr>';
+                return;
+            }
+            invitations.forEach(invitation => {
+                renderInvitationRow(tbody, invitation);
+            });
+        })
+        .catch(err => {
+            console.error('❌ Error loading invitations:', err);
+            if (err.status === 401) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Please login to view invitations</td></tr>';
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--danger-color);">Failed to load invitations. See console for details.</td></tr>';
+            }
+        });
+}
+
+function renderInvitationRow(tbody, invitation) {
+    const tr = document.createElement('tr');
+    const status = invitation.status || 'PENDING';
+    const statusUpper = String(status).toUpperCase();
+    const badgeClass = statusUpper === 'PENDING' ? 'warning' : statusUpper === 'ACCEPTED' ? 'success' : 'rejected' === statusUpper ? 'danger' : 'secondary';
+    
+    const projectTitle = invitation.project?.title || 'N/A';
+    const teacherName = invitation.project?.teacher?.name || 'N/A';
+    const deadline = invitation.project?.deadline || 'N/A';
+    
+    tr.innerHTML = `
+        <td>${projectTitle}</td>
+        <td>${teacherName}</td>
+        <td>${deadline}</td>
+        <td><span class="badge badge-${badgeClass}">${status}</span></td>
+        <td>
+            ${statusUpper === 'PENDING' ? `
+                <button class="btn btn-success btn-sm" onclick="respondToInvitation(${invitation.id}, 'ACCEPTED')">Accept</button>
+                <button class="btn btn-danger btn-sm" onclick="respondToInvitation(${invitation.id}, 'REJECTED')">Reject</button>
+            ` : '-'}
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
+async function respondToInvitation(invitationId, response) {
+    if (!API_BASE_URL) {
+        // fallback for mock data
+        const invitation = mockInvitations.find(inv => inv.id === invitationId);
+        if (invitation) {
+            invitation.status = response;
+            loadStudentInvitations();
+            showNotification(`Invitation ${response === 'ACCEPTED' ? 'accepted' : 'rejected'}!`, 'success');
+        }
+        return;
+    }
+
+    const endpoint = response === 'ACCEPTED' ? 'accept' : 'reject';
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/invitations/${invitationId}/${endpoint}`;
+    
+    try {
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, getAuthHeaders())
+        });
+
+        if (!resp.ok) {
+            const text = await resp.text().catch(() => '');
+            throw new Error(`Failed to ${endpoint} invitation: ${resp.status} ${resp.statusText} ${text}`);
+        }
+
+        showNotification(`Invitation ${response === 'ACCEPTED' ? 'accepted' : 'rejected'}!`, 'success');
         loadStudentInvitations();
-        showNotification(`Invitation ${response.toLowerCase()}!`, 'success');
+    } catch (err) {
+        console.error(`Error ${endpoint}ing invitation:`, err);
+        showNotification(`Failed to ${response === 'ACCEPTED' ? 'accept' : 'reject'} invitation. See console.`, 'danger');
     }
 }
 
@@ -659,9 +793,11 @@ function searchStudents() {
         const matchesDept = !department || student.department === department;
         const matchesYear = !year || student.year === year;
         const matchesAvailability = !availability || student.availabilityStatus === availability;
-        const matchesSkill = !skillFilter || student.skills.some(s => 
-            s.name.toLowerCase().includes(skillFilter)
-        );
+        const matchesSkill = !skillFilter || student.skills.some(s => {
+            // Handle both old format (s.name) and new backend format (s.skill.name)
+            const skillName = s.skill?.name || s.name || '';
+            return skillName.toLowerCase().includes(skillFilter);
+        });
         
         return matchesSearch && matchesDept && matchesYear && matchesAvailability && matchesSkill;
     });
@@ -688,12 +824,15 @@ function displaySearchResults(students) {
         card.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'var(--shadow-sm)'; };
         
         const skillsHTML = (student.skills || []).map(skill => {
+            // Handle both old format and new backend format
+            const skillName = skill.skill?.name || skill.name || 'Unknown';
+            const proficiency = skill.proficiency || skill.level || 1;
             const levels = Array.from({length: 5}, (_, i) => 
-                `<span class="level-dot ${i < skill.level ? 'filled' : ''}"></span>`
+                `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
             ).join('');
             return `
                 <div class="skill-tag">
-                    <span>${skill.name}</span>
+                    <span>${skillName}</span>
                     <span class="skill-level">${levels}</span>
                 </div>
             `;
@@ -888,23 +1027,28 @@ function logout() {
 
 // Initialize page based on current page
 document.addEventListener('DOMContentLoaded', function() {
-    const path = window.location.pathname;
-    
-    if (path.includes('student-dashboard.html')) {
-        loadStudentProfile();
-    } else if (path.includes('student-profile.html')) {
-        loadStudentProfile();
-    } else if (path.includes('student-skills.html')) {
-        loadStudentProfile();
-    } else if (path.includes('student-invitations.html')) {
-        // populate sidebar/profile first, then invitations
+    // Detect page context using DOM element presence
+    const hasStudentName = document.getElementById('studentName');
+    const hasInvitationsTable = document.getElementById('invitationsTableBody');
+    const hasSearchResults = document.getElementById('searchResults');
+    const hasMyProjects = document.getElementById('myProjectsContainer');
+    const hasViewStudent = document.getElementById('viewStudentName');
+
+    if (hasInvitationsTable) {
+        console.log('📧 Invitations page detected - loading data');
         loadStudentProfile();
         loadStudentInvitations();
-    } else if (path.includes('teacher-search.html')) {
+    } else if (hasStudentName) {
+        console.log('👤 Student profile/dashboard/skills page detected - loading profile');
+        loadStudentProfile();
+    } else if (hasSearchResults) {
+        console.log('🔍 Teacher search page detected - displaying results');
         displaySearchResults(mockStudents);
-    } else if (path.includes('teacher-projects.html')) {
+    } else if (hasMyProjects) {
+        console.log('📋 Teacher projects page detected - loading projects');
         loadMyProjects();
-    } else if (path.includes('student-profile-view.html')) {
+    } else if (hasViewStudent) {
+        console.log('👀 Student profile view page detected - loading student data');
         loadStudentProfileView();
     }
 });
