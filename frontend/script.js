@@ -418,9 +418,9 @@ function createSkillTag(skill, showRemove = false) {
     const tag = document.createElement('div');
     tag.className = 'skill-tag';
     
-    // Handle both old format (skill.name) and new backend format (skill.skill.name)
-    const skillName = skill.skill?.name || skill.name || 'Unknown';
-    const proficiency = skill.proficiency || skill.level || 1;
+    // Backend format: skillName and proficiency
+    const skillName = skill.skillName || 'Unknown';
+    const proficiency = skill.proficiency || 1;
     
     const levels = Array.from({length: 5}, (_, i) => 
         `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
@@ -444,9 +444,9 @@ function addSkill() {
         return;
     }
     
-    // Check if skill already exists (handle both old and new format)
+    // Check if skill already exists
     const exists = currentStudent.skills.some(s => {
-        const existingName = (s.skill?.name || s.name || '').toLowerCase();
+        const existingName = (s.skillName || '').toLowerCase();
         return existingName === skillName.toLowerCase();
     });
     if (exists) {
@@ -454,8 +454,8 @@ function addSkill() {
         return;
     }
     
-    // Add skill in backend format: { skill: { name }, proficiency }
-    currentStudent.skills.push({ skill: { name: skillName }, proficiency: skillLevel });
+    // Add skill in backend format: { skillName, proficiency }
+    currentStudent.skills.push({ skillName: skillName, proficiency: skillLevel });
     displayStudentSkills();
     
     // Clear inputs
@@ -466,10 +466,9 @@ function addSkill() {
 }
 
 function removeSkill(skillName) {
-    // Handle both old format (s.name) and new backend format (s.skill.name)
+    // Filter out skill using new backend format
     currentStudent.skills = currentStudent.skills.filter(s => {
-        const name = s.skill?.name || s.name;
-        return name !== skillName;
+        return s.skillName !== skillName;
     });
     displayStudentSkills();
     showNotification('Skill removed successfully!', 'success');
@@ -794,8 +793,8 @@ function searchStudents() {
         const matchesYear = !year || student.year === year;
         const matchesAvailability = !availability || student.availabilityStatus === availability;
         const matchesSkill = !skillFilter || student.skills.some(s => {
-            // Handle both old format (s.name) and new backend format (s.skill.name)
-            const skillName = s.skill?.name || s.name || '';
+            // Backend format: skillName and proficiency
+            const skillName = s.skillName || '';
             return skillName.toLowerCase().includes(skillFilter);
         });
         
@@ -824,9 +823,9 @@ function displaySearchResults(students) {
         card.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'var(--shadow-sm)'; };
         
         const skillsHTML = (student.skills || []).map(skill => {
-            // Handle both old format and new backend format
-            const skillName = skill.skill?.name || skill.name || 'Unknown';
-            const proficiency = skill.proficiency || skill.level || 1;
+            // Backend format: skillName and proficiency
+            const skillName = skill.skillName || 'Unknown';
+            const proficiency = skill.proficiency || 1;
             const levels = Array.from({length: 5}, (_, i) => 
                 `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
             ).join('');
