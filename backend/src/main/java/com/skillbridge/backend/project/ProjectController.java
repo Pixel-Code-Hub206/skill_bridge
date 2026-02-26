@@ -64,7 +64,7 @@ public class ProjectController {
         return projectRepository.findByTeacherId(teacherId);
     }
 
-    @GetMapping("/{projectId}/matched-student")
+    @GetMapping("/{projectId}/matched-students")
     public List<MatchedStudentsDTO> getMatchedStudents(
             @PathVariable Long projectId,
             @RequestParam(required = false) String department,
