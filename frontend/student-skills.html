@@ -73,8 +73,10 @@
                         <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
                             <div class="form-group" style="margin: 0;">
                                 <label for="skillName">Skill Name</label>
-                                <input type="text" id="skillName" placeholder="e.g., JavaScript, Python, React" required>
-                                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">Enter the name of the skill you want to add</p>
+                                <select id="skillName" required>
+                                    <option value="">-- Select a skill --</option>
+                                </select>
+                                <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem;">Choose a skill from the list</p>
                             </div>
                             
                             <div class="form-group" style="margin: 0;">
