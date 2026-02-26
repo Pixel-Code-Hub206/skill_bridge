@@ -24,4 +24,9 @@ public class TeacherController {
     public List<Teacher> getAllTeachers() {
         return teacherRepository.findAll();
     }
+    @GetMapping("/{teacherId}")
+    public Teacher getTeacherById(@PathVariable Long teacherId) {
+        return teacherRepository.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    }
 }

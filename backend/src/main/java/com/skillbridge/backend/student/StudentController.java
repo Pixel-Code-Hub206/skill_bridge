@@ -52,4 +52,22 @@ public class StudentController {
                 skillDTOs
         );
     }
+    @PutMapping("/{studentId}")
+    public Student updateStudent(
+            @PathVariable Long studentId,
+            @RequestBody Student updatedStudent
+    ) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        student.setDepartment(updatedStudent.getDepartment());
+        student.setAcademicYear(updatedStudent.getAcademicYear());
+        student.setAvailabilityStatus(updatedStudent.getAvailabilityStatus());
+        student.setGithubUrl(updatedStudent.getGithubUrl());
+        student.setLinkedinUrl(updatedStudent.getLinkedinUrl());
+        student.setPortfolioUrl(updatedStudent.getPortfolioUrl());
+        student.setBehanceUrl(updatedStudent.getBehanceUrl());
+
+        return studentRepository.save(student);
+    }
 }
