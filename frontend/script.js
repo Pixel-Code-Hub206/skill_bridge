@@ -121,6 +121,9 @@ const mockInvitations = [
 // Backend API base URL (update to your backend address)
 const API_BASE_URL = 'http://localhost:8080/api';
 
+// Global skills list
+let availableSkills = [];
+
 // Current user role
 let currentUserRole = 'student';
 let currentStudent = mockStudents[0];
@@ -236,6 +239,114 @@ window.onclick = function(event) {
 }
 
 // Student Dashboard Functions
+// Fetch teacher profile from backend
+async function fetchTeacherProfile() {
+    if (!API_BASE_URL) {
+        throw new Error('API_BASE_URL not configured');
+    }
+
+    const storedId = localStorage.getItem('userId');
+    const teacherId = storedId ? parseInt(storedId, 10) : 1;
+    const url = `${API_BASE_URL}/teachers/${teacherId}`;
+    
+    console.log('🌐 Fetching teacher profile from:', url);
+    const authHeaders = getAuthHeaders();
+    
+    const resp = await fetch(url, {
+        method: 'GET',
+        headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
+    });
+
+    console.log('📊 Teacher Profile API Response status:', resp.status, resp.statusText);
+
+    if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        console.error('❌ Teacher profile fetch error:', resp.status, text);
+        const err = new Error(`Failed to fetch teacher profile: ${resp.status} ${resp.statusText} ${text}`);
+        err.status = resp.status;
+        throw err;
+    }
+
+    const data = await resp.json();
+    console.log('✅ Teacher profile data received:', data);
+    return data;
+}
+
+function loadTeacherProfile() {
+    const sidebarNameEl = document.getElementById('sidebarUserName');
+    const sidebarAvatarEl = document.getElementById('sidebarAvatar');
+
+    (async () => {
+        try {
+            console.log('📋 Starting teacher profile load, API_BASE_URL:', API_BASE_URL);
+            if (API_BASE_URL) {
+                const teacher = await fetchTeacherProfile();
+                const teacherName = teacher.name;
+                console.log('✅ Teacher profile loaded:', teacherName);
+                
+                if (sidebarNameEl) {
+                    if ('value' in sidebarNameEl) sidebarNameEl.value = teacherName;
+                    else sidebarNameEl.textContent = teacherName;
+                }
+                
+                if (sidebarAvatarEl) {
+                    const initials = teacherName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('');
+                    sidebarAvatarEl.textContent = initials;
+                }
+            }
+        } catch (err) {
+            console.error('❌ Failed to load teacher profile:', err.message);
+        }
+    })();
+}
+
+async function fetchAllSkills() {
+    if (!API_BASE_URL) {
+        throw new Error('API_BASE_URL not configured');
+    }
+
+    const url = `${API_BASE_URL}/skills`;
+    console.log('🌐 Fetching all skills from:', url);
+    const authHeaders = getAuthHeaders();
+
+    const resp = await fetch(url, {
+        method: 'GET',
+        headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
+    });
+
+    console.log('📊 Skills API Response status:', resp.status, resp.statusText);
+
+    if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        console.error('❌ Skills fetch error:', resp.status, text);
+        const err = new Error(`Failed to fetch skills: ${resp.status} ${resp.statusText} ${text}`);
+        err.status = resp.status;
+        throw err;
+    }
+
+    const data = await resp.json();
+    console.log('✅ Skills data received:', data);
+    return Array.isArray(data) ? data : data.skills || [];
+}
+
+function loadAvailableSkills() {
+    if (!API_BASE_URL) {
+        console.warn('⚠️ API_BASE_URL not configured, skipping skill fetch');
+        return;
+    }
+
+    (async () => {
+        try {
+            console.log('📋 Starting skills load');
+            availableSkills = await fetchAllSkills();
+            console.log('✅ Skills loaded:', availableSkills);
+        } catch (err) {
+            console.error('❌ Failed to load skills:', err.message);
+            availableSkills = [];
+        }
+    })();
+}
+
 async function fetchStudentProfile() {
     if (!API_BASE_URL) {
         throw new Error('API_BASE_URL not configured');
@@ -479,24 +590,33 @@ function updateProfile() {
     const dept = document.getElementById('studentDepartment') ? document.getElementById('studentDepartment').value : null;
     const year = document.getElementById('studentYear') ? document.getElementById('studentYear').value : null;
     const availability = document.getElementById('availabilityStatus') ? document.getElementById('availabilityStatus').value : null;
+    const githubUrl = document.getElementById('studentGithubUrl') ? document.getElementById('studentGithubUrl').value.trim() : '';
+    const linkedinUrl = document.getElementById('studentLinkedinUrl') ? document.getElementById('studentLinkedinUrl').value.trim() : '';
+    const portfolioUrl = document.getElementById('studentPortfolioUrl') ? document.getElementById('studentPortfolioUrl').value.trim() : '';
+    const behanceUrl = document.getElementById('studentBehanceUrl') ? document.getElementById('studentBehanceUrl').value.trim() : '';
 
     const payload = {};
     if (dept) payload.department = dept;
-    if (year) payload.year = year;
+    if (year) payload.academicYear = year;
     if (availability) payload.availabilityStatus = availability;
+    // Include social URLs even if empty (optional fields)
+    payload.githubUrl = githubUrl || null;
+    payload.linkedinUrl = linkedinUrl || null;
+    payload.portfolioUrl = portfolioUrl || null;
+    payload.behanceUrl = behanceUrl || null;
 
     const studentId = currentStudent && currentStudent.id ? currentStudent.id : 1;
 
     if (!API_BASE_URL) {
         // update local mock
         if (payload.department) currentStudent.department = payload.department;
-        if (payload.year) currentStudent.year = payload.year;
+        if (payload.academicYear) currentStudent.year = payload.academicYear;
         if (payload.availabilityStatus) currentStudent.availabilityStatus = payload.availabilityStatus;
         showNotification('Profile updated locally (mock).', 'success');
         return;
     }
 
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${studentId}/profile`;
+    const url = `${API_BASE_URL}/students/${studentId}`;
     fetch(url, {
         method: 'PUT',
         headers: Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, getAuthHeaders()),
@@ -510,6 +630,7 @@ function updateProfile() {
         if (updated) currentStudent = Object.assign({}, currentStudent, updated);
         showNotification('Profile updated successfully!', 'success');
         try { populateSocialLinks(); } catch (e) {}
+        try { loadStudentProfile(); } catch (e) {}
     }).catch(err => {
         console.error(err);
         showNotification('Failed to update profile. See console.', 'danger');
@@ -533,8 +654,19 @@ function populateSocialLinks() {
         socialBehance: ['behance', 'behanceUrl', 'behance_url', 'behance_link']
     };
 
+    // Map display elements to form input elements
+    const formFieldMap = {
+        socialGithub: 'studentGithubUrl',
+        socialLinkedIn: 'studentLinkedinUrl',
+        socialPortfolio: 'studentPortfolioUrl',
+        socialBehance: 'studentBehanceUrl'
+    };
+
     Object.keys(FIELDS).forEach(elId => {
         const el = document.getElementById(elId);
+        const formFieldId = formFieldMap[elId];
+        const formInput = formFieldId ? document.getElementById(formFieldId) : null;
+
         if (!el) return;
         const keys = FIELDS[elId];
         let val = null;
@@ -542,6 +674,12 @@ function populateSocialLinks() {
             const v = currentStudent[k];
             if (v !== undefined && v !== null && String(v).toLowerCase() !== 'null' && String(v).trim() !== '') { val = String(v).trim(); break; }
         }
+        
+        // Update form input field
+        if (formInput) {
+            formInput.value = val || '';
+        }
+
         if (val) {
             el.href = val;
             el.style.display = 'inline-flex';
@@ -704,12 +842,17 @@ async function createProject(event) {
 
     // Get required skills
     const requiredSkills = [];
+    const requiredSkillIds = [];
     const skillInputs = document.querySelectorAll('.required-skill-item');
     skillInputs.forEach(item => {
-        const skillName = item.querySelector('.skill-name-input').value;
+        const skillSelect = item.querySelector('.skill-name-input');
+        const skillId = skillSelect.value;
         const minLevel = parseInt(item.querySelector('.skill-level-input').value);
-        if (skillName) {
-            requiredSkills.push({ name: skillName, minLevel: minLevel });
+        if (skillId) {
+            requiredSkillIds.push(parseInt(skillId));
+            const skill = availableSkills.find(s => s.id == skillId);
+            const skillName = skill ? skill.name : skillId;
+            requiredSkills.push({ id: skillId, name: skillName, minLevel: minLevel });
         }
     });
 
@@ -729,7 +872,7 @@ async function createProject(event) {
         description,
         deadline: deadline || null,
         requiredSkills,
-        requiredSkillIds: [],
+        requiredSkillIds,
         teacherId
     };
 
@@ -764,10 +907,17 @@ function addRequiredSkill() {
     skillItem.className = 'required-skill-item';
     skillItem.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 1rem; align-items: end;';
     
+    const skillOptions = availableSkills.map(skill => 
+        `<option value="${skill.id}" data-skill-name="${skill.name}">${skill.name}</option>`
+    ).join('');
+    
     skillItem.innerHTML = `
         <div class="form-group" style="margin: 0;">
             <label>Skill Name</label>
-            <input type="text" class="skill-name-input" placeholder="e.g., JavaScript, Python">
+            <select class="skill-name-input" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit;">
+                <option value="">-- Select a skill --</option>
+                ${skillOptions}
+            </select>
         </div>
         <div class="form-group" style="margin: 0;">
             <label>Min. Level (1-5)</label>
@@ -877,39 +1027,117 @@ function sendInvitation(studentId) {
     }
 }
 
+// Fetch teacher's projects from backend
+async function fetchTeacherProjects() {
+    if (!API_BASE_URL) {
+        throw new Error('API_BASE_URL not configured');
+    }
+
+    // Get the teacher ID from localStorage
+    const storedId = localStorage.getItem('userId');
+    const teacherId = storedId ? parseInt(storedId, 10) : null;
+    
+    if (!teacherId) {
+        throw new Error('Teacher ID not found - user not logged in');
+    }
+
+    const url = `${API_BASE_URL.replace(/\/$/, '')}/projects/teacher/${teacherId}`;
+    
+    console.log('🌐 Fetching teacher projects from:', url);
+    const authHeaders = getAuthHeaders();
+    console.log('🔐 Auth headers:', Object.keys(authHeaders).length > 0 ? 'Present' : 'None');
+    
+    const resp = await fetch(url, {
+        method: 'GET',
+        headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
+    });
+
+    console.log('📊 Projects API Response status:', resp.status, resp.statusText);
+
+    if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        console.error('❌ Projects fetch error:', resp.status, text);
+        const err = new Error(`Failed to fetch projects: ${resp.status} ${resp.statusText} ${text}`);
+        err.status = resp.status;
+        throw err;
+    }
+
+    const data = await resp.json();
+    console.log('✅ Projects data received:', data);
+    return Array.isArray(data) ? data : data.projects || [];
+}
+
 function loadMyProjects() {
     const container = document.getElementById('myProjectsContainer');
     if (!container) return;
     
     container.innerHTML = '';
     
-    mockProjects.forEach(project => {
-        const card = document.createElement('div');
-        card.className = 'card';
+    // Try to fetch from API, fall back to mock data
+    (async () => {
+        let projects = [];
         
-        const skillsHTML = project.requiredSkills.map(skill => 
-            `<span class="skill-tag">${skill.name} (Min: ${skill.minLevel})</span>`
-        ).join('');
-        
-        card.innerHTML = `
-            <div class="card-header">
-                <h3 class="card-title">${project.title}</h3>
-                <span class="badge badge-info">Active</span>
-            </div>
-            <div class="card-body">
-                <p style="margin-bottom: 1rem;">${project.description}</p>
-                <p style="margin-bottom: 0.5rem;"><strong>Required Skills:</strong></p>
-                <div class="skills-container" style="margin-bottom: 1rem;">${skillsHTML}</div>
-                <p style="color: var(--text-secondary);"><strong>Deadline:</strong> ${project.deadline}</p>
-                <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm">View Candidates</button>
-                    <button class="btn btn-secondary btn-sm">Edit Project</button>
+        try {
+            console.log('📋 Starting projects load, API_BASE_URL:', API_BASE_URL);
+            if (API_BASE_URL) {
+                projects = await fetchTeacherProjects();
+                console.log('✅ Projects loaded successfully from API:', projects);
+            } else {
+                console.warn('⚠️ API_BASE_URL not configured, using mock data');
+                projects = mockProjects;
+            }
+        } catch (err) {
+            console.error('❌ Failed to load projects from API:', err.message, err);
+            if (err && err.status === 401) {
+                console.warn('⚠️ Unauthorized - user not logged in');
+            } else {
+                console.warn('⚠️ Using mock data as fallback');
+            }
+            projects = mockProjects;
+        }
+
+        if (!projects || projects.length === 0) {
+            const noProjectsMessage = document.getElementById('noProjectsMessage');
+            if (noProjectsMessage) {
+                noProjectsMessage.style.display = 'block';
+            }
+            return;
+        }
+
+        container.innerHTML = '';
+        projects.forEach(project => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            const skillsHTML = (project.requiredSkills || []).map(skill => 
+                `<span class="project-skill-badge">${skill.name}</span>`
+            ).join("");
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 class="card-title">${project.title}</h3>
+                    <span class="badge badge-info">Active</span>
                 </div>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
+                <div class="card-body">
+                    <p style="margin-bottom: 1rem;">${project.description}</p>
+                    <p style="margin-bottom: 0.5rem;"><strong>Required Skills:</strong></p>
+                    <div class="skills-container" style="margin-bottom: 1rem;">${skillsHTML}</div>
+                    <p style="color: var(--text-secondary);"><strong>Deadline:</strong> ${project.deadline}</p>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+                        <button class="btn btn-primary btn-sm">View Candidates</button>
+                        <button class="btn btn-secondary btn-sm">Edit Project</button>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(card);
+        });
+
+        const noProjectsMessage = document.getElementById('noProjectsMessage');
+        if (noProjectsMessage) {
+            noProjectsMessage.style.display = 'none';
+        }
+    })();
 }
 
 async function loadStudentProfileView() {
@@ -1032,6 +1260,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const hasSearchResults = document.getElementById('searchResults');
     const hasMyProjects = document.getElementById('myProjectsContainer');
     const hasViewStudent = document.getElementById('viewStudentName');
+    const hasTeacherPage = document.getElementById('teacherPage');
+    const hasRequiredSkillsContainer = document.getElementById('requiredSkillsContainer');
 
     if (hasInvitationsTable) {
         console.log('📧 Invitations page detected - loading data');
@@ -1044,10 +1274,18 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🔍 Teacher search page detected - displaying results');
         displaySearchResults(mockStudents);
     } else if (hasMyProjects) {
-        console.log('📋 Teacher projects page detected - loading projects');
+        console.log('📋 Teacher projects page detected - loading projects and teacher profile');
+        loadTeacherProfile();
         loadMyProjects();
     } else if (hasViewStudent) {
         console.log('👀 Student profile view page detected - loading student data');
         loadStudentProfileView();
+    } else if (hasRequiredSkillsContainer) {
+        console.log('➕ Create project page detected - loading teacher profile and skills');
+        loadTeacherProfile();
+        loadAvailableSkills();
+    } else if (hasTeacherPage) {
+        console.log('👨‍🏫 Teacher page detected - loading teacher profile');
+        loadTeacherProfile();
     }
 });

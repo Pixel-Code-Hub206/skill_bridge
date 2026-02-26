@@ -142,12 +142,30 @@
                                     <option value="OPEN_TO_WORK">Open to Work</option>
                                 </select>
                             </div>
+
+                            <div class="form-group">
+                                <label for="studentGithubUrl">GitHub URL</label>
+                                <input type="url" id="studentGithubUrl" placeholder="https://github.com/username">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentLinkedinUrl">LinkedIn URL</label>
+                                <input type="url" id="studentLinkedinUrl" placeholder="https://linkedin.com/in/username">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentPortfolioUrl">Portfolio URL</label>
+                                <input type="url" id="studentPortfolioUrl" placeholder="https://your-portfolio.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentBehanceUrl">Behance URL</label>
+                                <input type="url" id="studentBehanceUrl" placeholder="https://behance.net/username">
+                            </div>
                         </div>
                         
                         <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-                            <button type="button" disabled title="Profile editing will be available in the next version">
-    Save Changes
-</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
                             <button type="button" class="btn btn-secondary" onclick="loadStudentProfile()">Cancel</button>
                         </div>
                     </form>
