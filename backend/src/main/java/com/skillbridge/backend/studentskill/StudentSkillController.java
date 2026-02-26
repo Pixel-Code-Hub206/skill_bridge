@@ -6,7 +6,11 @@ import com.skillbridge.backend.student.Student;
 import com.skillbridge.backend.student.StudentRepository;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/student-skills")
 public class StudentSkillController {
 
@@ -34,6 +38,29 @@ public class StudentSkillController {
         Skill skill = skillRepository.findById(skillId).orElseThrow();
 
         StudentSkill studentSkill = new StudentSkill(student, skill, proficiency);
+        return studentSkillRepository.save(studentSkill);
+    }
+
+    @GetMapping("/student/{studentId}")
+    public List<StudentSkill> getStudentSkills(@PathVariable Long studentId) {
+        return studentSkillRepository.findByStudentId(studentId);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteStudentSkill(@PathVariable Long id) {
+        studentSkillRepository.deleteById(id);
+    }
+
+    @PutMapping("/{id}")
+    public StudentSkill updateProficiency(
+            @PathVariable Long id,
+            @RequestBody Map<String, Integer> payload
+    ) {
+        StudentSkill studentSkill = studentSkillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        studentSkill.setProficiency(payload.get("proficiency"));
+
         return studentSkillRepository.save(studentSkill);
     }
 }

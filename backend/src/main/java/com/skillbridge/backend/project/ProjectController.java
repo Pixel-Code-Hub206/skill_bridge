@@ -10,7 +10,9 @@ import com.skillbridge.backend.teacher.TeacherRepository;
 import jakarta.persistence.Table;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -100,5 +102,31 @@ public class ProjectController {
                 .filter(dto -> availabilityStatus == null || dto.getAvailabilityStatus().equals(availabilityStatus))
                 .filter(dto -> skill == null || dto.getMatchedSkills().contains(skill))
                 .toList();
+    }
+    @PutMapping("/{projectId}")
+    public Project updateProject(
+            @PathVariable Long projectId,
+            @RequestBody Map<String, Object> payload
+    ) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        project.setTitle((String) payload.get("title"));
+        project.setDescription((String) payload.get("description"));
+        project.setDeadline(LocalDate.parse((String) payload.get("deadline")));
+
+        if (payload.get("requiredSkillIds") != null) {
+            List<Integer> skillIdsRaw = (List<Integer>) payload.get("requiredSkillIds");
+
+            List<Long> skillIds = skillIdsRaw.stream()
+                    .map(Long::valueOf)
+                    .toList();
+
+            List<Skill> skills = skillRepository.findAllById(skillIds);
+
+            project.setRequiredSkills(skills);
+        }
+
+        return projectRepository.save(project);
     }
 }
