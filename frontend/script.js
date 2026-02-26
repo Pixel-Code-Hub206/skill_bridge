@@ -273,8 +273,8 @@ async function fetchTeacherProfile() {
 }
 
 function loadTeacherProfile() {
-    const sidebarNameEl = document.getElementById('sidebarUserName');
-    const sidebarAvatarEl = document.getElementById('sidebarAvatar');
+    const sidebarNameEl = document.getElementById('sidebarUserName') || document.querySelector('.user-profile h4');
+    const sidebarAvatarEl = document.getElementById('sidebarAvatar') || document.querySelector('.user-avatar');
 
     (async () => {
         try {
@@ -329,23 +329,29 @@ async function fetchAllSkills() {
     return Array.isArray(data) ? data : data.skills || [];
 }
 
-function loadAvailableSkills() {
-    if (!API_BASE_URL) {
-        console.warn('⚠️ API_BASE_URL not configured, skipping skill fetch');
-        return;
+async function loadAllSkills() {
+    const dropdown = document.getElementById('skillName');
+    if (!dropdown) return;
+    
+    try {
+        const resp = await fetch(`${API_BASE_URL}/skills`, {
+            method: 'GET',
+            headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
+        });
+        
+        if (!resp.ok) throw new Error(`Failed to fetch skills: ${resp.status}`);
+        
+        availableSkills = await resp.json();
+        dropdown.innerHTML = '<option value="">-- Select a skill --</option>';
+        availableSkills.forEach(skill => {
+            const option = document.createElement('option');
+            option.value = skill.id;
+            option.textContent = skill.name;
+            dropdown.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Failed to load skills:', err);
     }
-
-    (async () => {
-        try {
-            console.log('📋 Starting skills load');
-            availableSkills = await fetchAllSkills();
-            console.log('✅ Skills loaded:', availableSkills);
-            populateSkillDropdown();
-        } catch (err) {
-            console.error('❌ Failed to load skills:', err.message);
-            availableSkills = [];
-        }
-    })();
 }
 
 async function fetchStudentProfile() {
@@ -505,24 +511,38 @@ async function loadStudentProfile() {
         }
     }
 
-    displayStudentSkills();
+    loadStudentSkills();
     try { populateSocialLinks(); } catch (e) {}
 }
 
-function displayStudentSkills() {
+function renderStudentSkills(studentSkills = []) {
     const container = document.getElementById('skillsDisplay');
     if (!container) return;
     
     container.innerHTML = '';
-    const skills = (currentStudent.skills || []);
-    (skills).forEach(skill => {
-        const skillTag = createSkillTag(skill, true);
-        container.appendChild(skillTag);
+
+    if (!Array.isArray(studentSkills)) studentSkills = [];
+    
+    studentSkills.forEach(studentSkill => {
+        const skillId = studentSkill.id;
+        const skillName = studentSkill.skill.name;
+        const proficiency = studentSkill.proficiency;
+
+        const card = document.createElement('div');
+        card.className = 'skill-card';
+
+        card.innerHTML = `
+            <span>${skillName}</span>
+            <span>${'●'.repeat(proficiency)}</span>
+            <button onclick="deleteStudentSkill(${skillId})">×</button>
+        `;
+
+        container.appendChild(card);
     });
 
     const noSkillsMessage = document.getElementById('noSkillsMessage');
     if (noSkillsMessage) {
-        noSkillsMessage.style.display = skills.length === 0 ? 'block' : 'none';
+        noSkillsMessage.style.display = studentSkills.length === 0 ? 'block' : 'none';
     }
 }
 
@@ -530,10 +550,10 @@ function createSkillTag(skill, showRemove = false) {
     const tag = document.createElement('div');
     tag.className = 'skill-tag';
     
-    // Backend format: skillName and proficiency
+    // Backend format: id is the StudentSkill ID, skillName and proficiency are properties
+    const studentSkillId = skill.id ? parseInt(skill.id, 10) : null;
     const skillName = skill.skillName || 'Unknown';
     const proficiency = skill.proficiency || 1;
-    const skillId = skill.id || null;
     
     const levels = Array.from({length: 5}, (_, i) => 
         `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
@@ -542,26 +562,29 @@ function createSkillTag(skill, showRemove = false) {
     tag.innerHTML = `
         <span>${skillName}</span>
         <span class="skill-level">${levels}</span>
-        ${showRemove ? '<button onclick="deleteStudentSkill(' + skillId + ')">×</button>' : ''}
+        ${showRemove && studentSkillId ? '<button onclick="deleteStudentSkill(' + studentSkillId + ')">×</button>' : ''}
     `;
     
     return tag;
 }
 
-function populateSkillDropdown() {
-    const dropdown = document.getElementById('skillName');
-    if (!dropdown) return;
-
-    // Clear existing options except the first one
-    dropdown.innerHTML = '<option value="">-- Select a skill --</option>';
-
-    // Populate with available skills
-    availableSkills.forEach(skill => {
-        const option = document.createElement('option');
-        option.value = skill.id;
-        option.textContent = skill.name;
-        dropdown.appendChild(option);
-    });
+async function loadStudentSkills() {
+    const studentId = currentStudent?.id || parseInt(localStorage.getItem('userId'), 10) || 1;
+    
+    try {
+        const resp = await fetch(`${API_BASE_URL}/student-skills/student/${studentId}`, {
+            method: 'GET',
+            headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
+        });
+        
+        if (!resp.ok) throw new Error(`Failed to fetch student skills: ${resp.status}`);
+        
+        const studentSkills = await resp.json();
+        renderStudentSkills(studentSkills);
+    } catch (err) {
+        console.error('Failed to load student skills:', err);
+        renderStudentSkills([]);
+    }
 }
 
 function addSkill() {
@@ -619,17 +642,11 @@ function addSkill() {
         document.getElementById('skillName').value = '';
         document.getElementById('skillLevel').value = '3';
         
-        // Reload student skills list
+        // Reload student skills
         try {
-            const updatedStudent = await fetchStudentProfile();
-            if (updatedStudent) {
-                currentStudent = updatedStudent;
-                displayStudentSkills();
-            }
+            await loadStudentSkills();
         } catch (err) {
             console.error('Error reloading skills:', err);
-            // Still clear the form even if reload fails
-            displayStudentSkills();
         }
     }).catch(err => {
         console.error(err);
@@ -638,15 +655,7 @@ function addSkill() {
 }
 
 async function deleteStudentSkill(id) {
-    if (!id) {
-        showNotification('Cannot delete skill: ID missing.', 'danger');
-        return;
-    }
-
-    if (!API_BASE_URL) {
-        showNotification('API not configured.', 'danger');
-        return;
-    }
+    console.log('Deleting skill:', id);
 
     try {
         const resp = await fetch(`${API_BASE_URL}/student-skills/${id}`, {
@@ -654,15 +663,12 @@ async function deleteStudentSkill(id) {
             headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
         });
 
-        if (!resp.ok) {
-            const txt = await resp.text().catch(() => '');
-            throw new Error(`Delete failed: ${resp.status} ${resp.statusText} ${txt}`);
-        }
+        if (!resp.ok) throw new Error(`Delete failed: ${resp.status}`);
 
         showNotification('Skill removed successfully!', 'success');
-        loadStudentProfile();
+        await loadStudentSkills();
     } catch (err) {
-        console.error(err);
+        console.error('Delete error:', err);
         showNotification('Failed to remove skill. See console.', 'danger');
     }
 }
@@ -676,7 +682,9 @@ function removeSkill(studentSkillId) {
     if (!API_BASE_URL) {
         // Local-only removal for mock data
         currentStudent.skills = currentStudent.skills.filter(s => s.id !== studentSkillId);
-        displayStudentSkills();
+        if (currentStudent.skills) {
+            renderStudentSkills(currentStudent.skills);
+        }
         showNotification('Skill removed successfully!', 'success');
         return;
     }
@@ -691,14 +699,14 @@ function removeSkill(studentSkillId) {
             throw new Error(`Delete failed: ${resp.status} ${resp.statusText} ${txt}`);
         }
         showNotification('Skill removed successfully!', 'success');
-        // Reload student skills list
-        displayStudentSkills();
         // Fetch fresh data from API
         try {
             const updatedStudent = await fetchStudentProfile();
             if (updatedStudent) {
                 currentStudent = updatedStudent;
-                displayStudentSkills();
+                if (currentStudent.skills) {
+                    renderStudentSkills(currentStudent.skills);
+                }
             }
         } catch (err) {
             console.error('Error reloading skills:', err);
@@ -1395,12 +1403,13 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (hasSkillsDisplay) {
         console.log('⚡ Student skills page detected - loading profile and skills');
         loadStudentProfile();
-        loadAvailableSkills();
+        loadAllSkills();
     } else if (hasStudentName) {
         console.log('👤 Student profile/dashboard page detected - loading profile');
         loadStudentProfile();
     } else if (hasSearchResults) {
-        console.log('🔍 Teacher search page detected - displaying results');
+        console.log('🔍 Teacher search page detected - loading teacher profile and displaying results');
+        loadTeacherProfile();
         displaySearchResults(mockStudents);
     } else if (hasMyProjects) {
         console.log('📋 Teacher projects page detected - loading projects and teacher profile');
@@ -1412,7 +1421,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (hasRequiredSkillsContainer) {
         console.log('➕ Create project page detected - loading teacher profile and skills');
         loadTeacherProfile();
-        loadAvailableSkills();
+        loadAllSkills();
     } else if (hasTeacherPage) {
         console.log('👨‍🏫 Teacher page detected - loading teacher profile');
         loadTeacherProfile();
