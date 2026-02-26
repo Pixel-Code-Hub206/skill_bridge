@@ -1152,11 +1152,115 @@ function viewStudentProfile(studentId) {
     window.location.href = 'student-profile-view.html';
 }
 
-function sendInvitation(studentId) {
-    const student = mockStudents.find(s => s.id === studentId);
-    if (student) {
-        showNotification(`Invitation sent to ${student.name}!`, 'success');
+window.sendInvitation = async function(projectId, studentId, buttonEl) {
+    alert("INVITATION SENT!");
+    console.log("INVITE CLICKED", projectId, studentId);
+
+    if (buttonEl) {
+        buttonEl.disabled = true;
+        buttonEl.textContent = "Sending...";
     }
+
+    try {
+        const resp = await fetch("http://localhost:8080/api/invitations", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                projectId: projectId,
+                studentId: studentId
+            })
+        });
+
+        console.log("Response status:", resp.status);
+
+        if (!resp.ok) {
+            const text = await resp.text();
+            console.error("Backend error:", text);
+            throw new Error(text);
+        }
+
+        showNotification("Invitation sent successfully!", "success");
+
+        if (buttonEl) {
+            buttonEl.textContent = "Invited";
+        }
+
+    } catch (err) {
+        console.error("Invite failed:", err);
+        showNotification("Failed to send invitation", "danger");
+
+        if (buttonEl) {
+            buttonEl.disabled = false;
+            buttonEl.textContent = "Send Invitation";
+        }
+    }
+}
+
+async function loadMatchedStudents(projectId) {
+    const container = document.getElementById('matchedStudentsContainer');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading matched students...</p>';
+
+    try {
+        const resp = await fetch(`${API_BASE_URL}/projects/${projectId}/matched-students`, {
+            method: 'GET',
+            headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
+        });
+
+        if (!resp.ok) throw new Error(`Failed to fetch matched students: ${resp.status}`);
+
+        const students = await resp.json();
+        renderMatchedStudents(students, projectId);
+    } catch (err) {
+        console.error('Error loading matched students:', err);
+        container.innerHTML = '<p style="color: var(--danger-color); padding: 2rem;">Failed to load matched students. See console.</p>';
+    }
+}
+
+function renderMatchedStudents(students = [], projectId) {
+    const container = document.getElementById('matchedStudentsContainer');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (!Array.isArray(students) || students.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No matched students found.</p>';
+        return;
+    }
+
+    students.forEach(student => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.cssText = 'transition: all 0.3s ease;';
+        card.onmouseover = function() { this.style.boxShadow = 'var(--shadow-md)'; };
+        card.onmouseout = function() { this.style.boxShadow = 'var(--shadow-sm)'; };
+
+        const humanDept = humanizeDepartment(student.department);
+        const humanYear = humanizeYear(student.academicYear);
+        const humanAvailability = humanizeAvailability(student.availabilityStatus);
+
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                <div>
+                    <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.1rem; margin-bottom: 0.5rem;">${student.name}</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">${student.email}</p>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">${humanDept} - ${humanYear}</p>
+                </div>
+                <span class="${availabilityBadgeClass(student.availabilityStatus)}">
+                    ${humanAvailability}
+                </span>
+            </div>
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                <button class="btn btn-primary btn-sm" onclick="viewStudentProfile(${student.id})">View Profile</button>
+                <button class="btn btn-success btn-sm" onclick="sendInvitation(${projectId}, ${student.id}, this)">Send Invitation</button>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
 }
 
 // Fetch teacher's projects from backend
@@ -1417,6 +1521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMyProjects();
     } else if (hasViewStudent) {
         console.log('👀 Student profile view page detected - loading student data');
+        loadTeacherProfile();
         loadStudentProfileView();
     } else if (hasRequiredSkillsContainer) {
         console.log('➕ Create project page detected - loading teacher profile and skills');
