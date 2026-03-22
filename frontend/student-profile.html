@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - SSMS</title>
+    <title>My Profile - SkillBridge</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -14,29 +15,29 @@
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="8" fill="#2563eb"/>
+                        <rect width="40" height="40" rx="8" fill="var(--primary-color)"/>
                         <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
                         <circle cx="20" cy="20" r="3" fill="white"/>
                     </svg>
-                    <span>SSMS</span>
+                    <span>SkillBridge</span>
                 </div>
             </div>
             
             <nav class="sidebar-menu">
                 <a href="student-dashboard.html" class="menu-item">
-                    <span class="menu-icon">📊</span>
+                    <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
                     <span>Dashboard</span>
                 </a>
                 <a href="student-profile.html" class="menu-item active">
-                    <span class="menu-icon">👤</span>
+                    <span class="menu-icon"><i data-lucide="user"></i></span>
                     <span>My Profile</span>
                 </a>
                 <a href="student-skills.html" class="menu-item">
-                    <span class="menu-icon">⚡</span>
+                    <span class="menu-icon"><i data-lucide="zap"></i></span>
                     <span>My Skills</span>
                 </a>
                 <a href="student-invitations.html" class="menu-item">
-                    <span class="menu-icon">📧</span>
+                    <span class="menu-icon"><i data-lucide="mail"></i></span>
                     <span>Invitations</span>
                 </a>
             </nav>

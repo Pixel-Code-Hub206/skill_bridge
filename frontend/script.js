@@ -1673,14 +1673,42 @@ function humanizeDepartment(d) {
 }
 
 function logout() {
-    if (confirm('Are you sure you want to logout?')) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background: white; padding: 2rem; border-radius: 1rem; box-shadow: var(--shadow-xl); width: 90%; max-width: 400px; text-align: center; font-family: "Inter", sans-serif;';
+
+    modal.innerHTML = `
+        <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); color: var(--danger-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+            <i data-lucide="log-out" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Ready to leave?</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">Are you sure you want to logout of your account? You will need to sign in again to access your dashboard.</p>
+        <div style="display: flex; gap: 1rem;">
+            <button id="cancelLogout" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+            <button id="confirmLogout" class="btn btn-primary" style="flex: 1; background: var(--danger-color); border-color: var(--danger-color);">Logout</button>
+        </div>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    document.getElementById('cancelLogout').onclick = () => overlay.remove();
+    document.getElementById('confirmLogout').onclick = () => {
         clearAuthData();
         window.location.href = 'index.html';
-    }
+    };
 }
 
 // Initialize page based on current page
 document.addEventListener('DOMContentLoaded', function () {
+    // Inject Lucide SVGs
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
     // Detect page context using DOM element presence
     const hasStudentName = document.getElementById('studentName');
     const hasInvitationsTable = document.getElementById('invitationsTableBody');

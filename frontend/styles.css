@@ -1,9 +1,13 @@
 :root {
-    /* Color Palette */
-    --primary-color: #2563eb;
-    --primary-dark: #1e40af;
-    --primary-light: #3b82f6;
-    --secondary-color: #0ea5e9;
+    /* Color Palette - Emerald Theme Base */
+    --primary-color: #059669;
+    /* Emerald 600 */
+    --primary-dark: #047857;
+    /* Emerald 700 */
+    --primary-light: #10b981;
+    /* Emerald 500 */
+    --secondary-color: #0d9488;
+    /* Teal 600 */
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
@@ -767,19 +771,23 @@ body {
 }
 
 .stat-icon.blue {
-    background: rgba(37, 99, 235, 0.1);
+    background: rgba(13, 148, 136, 0.1);
+    color: #0d9488;
 }
 
 .stat-icon.green {
     background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
 }
 
 .stat-icon.orange {
     background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
 }
 
 .stat-icon.purple {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
 }
 
 .stat-info h3 {
