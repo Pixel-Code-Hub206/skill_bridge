@@ -1061,24 +1061,45 @@ function addRequiredSkill() {
     container.appendChild(skillItem);
 }
 
-function searchStudents() {
+async function searchStudents() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const department = document.getElementById('departmentFilter').value;
     const year = document.getElementById('yearFilter').value;
     const availability = document.getElementById('availabilityFilter').value;
     const skillFilter = document.getElementById('skillFilter').value.toLowerCase();
 
-    let filteredStudents = mockStudents.filter(student => {
+    let sourceData = mockStudents;
+
+    if (API_BASE_URL) {
+        if (!window.allBackendStudents) {
+            try {
+                const url = `${API_BASE_URL}/students`;
+                const resp = await fetch(url, { headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders()) });
+                if (resp.ok) {
+                    window.allBackendStudents = await resp.json();
+                } else {
+                    console.error('Failed to fetch students from backend:', await resp.text());
+                }
+            } catch (err) {
+                console.error('Error fetching backend students:', err);
+            }
+        }
+        if (window.allBackendStudents) {
+            sourceData = window.allBackendStudents;
+        }
+    }
+
+    let filteredStudents = sourceData.filter(student => {
         const matchesSearch = student.name.toLowerCase().includes(searchTerm) ||
             student.email.toLowerCase().includes(searchTerm);
-        const matchesDept = !department || student.department === department;
-        const matchesYear = !year || student.year === year;
-        const matchesAvailability = !availability || student.availabilityStatus === availability;
-        const matchesSkill = !skillFilter || student.skills.some(s => {
-            // Backend format: skillName and proficiency
-            const skillName = s.skillName || '';
+        const matchesDept = !department || student.department === department || humanizeDepartment(student.department) === department;
+        const studentYearHuman = humanizeYear(student.academicYear || student.year);
+        const matchesYear = !year || studentYearHuman === year || (student.academicYear || student.year) === year;
+        const matchesAvailability = !availability || student.availabilityStatus === availability || humanizeAvailability(student.availabilityStatus) === availability;
+        const matchesSkill = !skillFilter || (student.skills && student.skills.some(s => {
+            const skillName = s.skillName || (s.skill && s.skill.name) || s.name || '';
             return skillName.toLowerCase().includes(skillFilter);
-        });
+        }));
 
         return matchesSearch && matchesDept && matchesYear && matchesAvailability && matchesSkill;
     });
@@ -1105,9 +1126,9 @@ function displaySearchResults(students) {
         card.onmouseout = function () { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'var(--shadow-sm)'; };
 
         const skillsHTML = (student.skills || []).map(skill => {
-            // Backend format: skillName and proficiency
-            const skillName = skill.skillName || 'Unknown';
-            const proficiency = skill.proficiency || 1;
+            // Backend format: skillName and proficiency or nested skill.name
+            const skillName = skill.skillName || (skill.skill && skill.skill.name) || skill.name || 'Unknown';
+            const proficiency = skill.proficiency || skill.level || 1;
             const levels = Array.from({ length: 5 }, (_, i) =>
                 `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
             ).join('');
@@ -1120,7 +1141,7 @@ function displaySearchResults(students) {
         }).join('');
 
         const humanDept = humanizeDepartment(student.department);
-        const humanYear = humanizeYear(student.year);
+        const humanYear = humanizeYear(student.academicYear || student.year);
         const humanAvailability = humanizeAvailability(student.availabilityStatus);
         card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
@@ -1552,7 +1573,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('🔍 Teacher search page detected - loading teacher profile and displaying results');
         loadTeacherProfile();
         loadTeacherProjectsForDropdown();
-        displaySearchResults(mockStudents);
+        searchStudents();
     } else if (hasMyProjects) {
         console.log('📋 Teacher projects page detected - loading projects and teacher profile');
         loadTeacherProfile();
