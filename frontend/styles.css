@@ -474,6 +474,7 @@ body {
 .form-group input[type="email"],
 .form-group input[type="password"],
 .form-group input[type="number"],
+.form-group input[type="url"],
 .form-group select,
 .form-group textarea,
 .form-control {
@@ -946,6 +947,7 @@ tbody tr:hover {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -953,9 +955,12 @@ tbody tr:hover {
 }
 
 @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: translateY(0);
     }
+
     50% {
         transform: translateY(-20px);
     }
@@ -965,6 +970,7 @@ tbody tr:hover {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -975,6 +981,7 @@ tbody tr:hover {
         opacity: 0;
         transform: translateY(-50px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -986,20 +993,20 @@ tbody tr:hover {
     .hero-content {
         grid-template-columns: 1fr;
     }
-    
+
     .hero-visual {
         display: none;
     }
-    
+
     .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
     }
-    
+
     .main-content {
         margin-left: 0;
     }
-    
+
     .hero-title {
         font-size: 3rem;
     }
@@ -1009,23 +1016,23 @@ tbody tr:hover {
     .nav-links {
         display: none;
     }
-    
+
     .hero-title {
         font-size: 2.5rem;
     }
-    
+
     .hero-buttons {
         flex-direction: column;
     }
-    
+
     .section-title {
         font-size: 2rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .top-bar {
         flex-direction: column;
         align-items: flex-start;
@@ -1035,7 +1042,7 @@ tbody tr:hover {
     .footer {
         padding: 3rem 1.5rem 1.5rem;
     }
-    
+
     .footer-bottom {
         flex-direction: column;
         align-items: flex-start;
