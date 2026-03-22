@@ -1552,6 +1552,38 @@ async function loadStudentProfileView() {
         const skillTag = createSkillTag(skill, false);
         skillsContainer.appendChild(skillTag);
     });
+
+    // Skill Analysis Logic
+    const studentSkillsArr = student.skills || [];
+    const totalSkillsCount = studentSkillsArr.length;
+    let expertCount = 0;
+    let advancedCount = 0;
+    let intCount = 0;
+    let sumProficiency = 0;
+
+    studentSkillsArr.forEach(s => {
+        const prof = parseInt(s.proficiency) || 1;
+        sumProficiency += prof;
+        if (prof === 5) expertCount++;
+        else if (prof === 4) advancedCount++;
+        else if (prof === 3) intCount++;
+    });
+
+    const averageLevel = totalSkillsCount > 0 ? (sumProficiency / totalSkillsCount) : 0;
+
+    const overallLevelText = document.getElementById('overallSkillLevelText');
+    const overallLevelBar = document.getElementById('overallSkillLevelBar');
+    const viewTotalSkills = document.getElementById('viewTotalSkills');
+    const viewExpertSkills = document.getElementById('viewExpertSkills');
+    const viewAdvancedSkills = document.getElementById('viewAdvancedSkills');
+    const viewIntSkills = document.getElementById('viewIntermediateSkills');
+
+    if (overallLevelText) overallLevelText.textContent = averageLevel.toFixed(1) + ' / 5';
+    if (overallLevelBar) overallLevelBar.style.width = (averageLevel / 5 * 100) + '%';
+    if (viewTotalSkills) viewTotalSkills.textContent = totalSkillsCount;
+    if (viewExpertSkills) viewExpertSkills.textContent = expertCount;
+    if (viewAdvancedSkills) viewAdvancedSkills.textContent = advancedCount;
+    if (viewIntSkills) viewIntSkills.textContent = intCount;
 }
 
 // Utility Functions
