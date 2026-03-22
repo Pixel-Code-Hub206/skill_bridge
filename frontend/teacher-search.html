@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Students - SSMS</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -14,14 +18,14 @@
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="8" fill="#2563eb"/>
-                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
-                        <circle cx="20" cy="20" r="3" fill="white"/>
+                        <rect width="40" height="40" rx="8" fill="#2563eb" />
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
                     </svg>
                     <span>SSMS</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-menu">
                 <a href="teacher-dashboard.html" class="menu-item">
                     <span class="menu-icon">📊</span>
@@ -40,7 +44,7 @@
                     <span>My Projects</span>
                 </a>
             </nav>
-            
+
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <div class="user-avatar">NK</div>
@@ -49,7 +53,8 @@
                         <p>Teacher</p>
                     </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="logout()" style="width: 100%; margin-top: 1rem;">Logout</button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()"
+                    style="width: 100%; margin-top: 1rem;">Logout</button>
             </div>
         </aside>
 
@@ -65,12 +70,14 @@
             <!-- Search and Filter Section -->
             <div class="search-filter-section">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name or email..." onkeyup="searchStudents()">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name or email..."
+                        onkeyup="searchStudents()">
                     <button class="btn btn-primary" onclick="searchStudents()">Search</button>
                 </div>
 
                 <div style="margin-bottom: 1rem;">
-                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Filters</h3>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                        Filters</h3>
                 </div>
 
                 <div class="filter-grid">
@@ -112,14 +119,22 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 1rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('departmentFilter').value=''; document.getElementById('yearFilter').value=''; document.getElementById('availabilityFilter').value=''; document.getElementById('skillFilter').value=''; searchStudents();">Clear Filters</button>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn btn-secondary btn-sm"
+                        onclick="document.getElementById('departmentFilter').value=''; document.getElementById('yearFilter').value=''; document.getElementById('availabilityFilter').value=''; document.getElementById('skillFilter').value=''; searchStudents();">Clear
+                        Filters</button>
+
+                    <select id="projectSelector" class="form-control" style="max-width: 300px; margin: 0;">
+                        <option value="">-- Select Project for Invitation --</option>
+                    </select>
                 </div>
             </div>
 
             <!-- Search Results -->
             <div style="margin-bottom: 1.5rem;">
-                <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">Search Results</h2>
+                <h2
+                    style="font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                    Search Results</h2>
                 <p style="color: var(--text-secondary); font-size: 0.95rem;">Found 5 students matching your criteria</p>
             </div>
 
@@ -131,13 +146,18 @@
             <div id="noResultsMessage" style="display: none;">
                 <div class="card" style="text-align: center; padding: 4rem 2rem;">
                     <div style="font-size: 5rem; margin-bottom: 1.5rem;">🔍</div>
-                    <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary);">No Students Found</h3>
-                    <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Try adjusting your filters or search criteria to find more students.</p>
+                    <h3
+                        style="font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary);">
+                        No Students Found</h3>
+                    <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Try adjusting your
+                        filters or search criteria to find more students.</p>
                 </div>
             </div>
         </main>
     </div>
 
+
     <script src="script.js"></script>
 </body>
+
 </html>

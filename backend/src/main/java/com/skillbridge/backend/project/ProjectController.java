@@ -19,114 +19,116 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class ProjectController {
 
-    private final ProjectRepository projectRepository;
-    private final TeacherRepository teacherRepository;
-    private final SkillRepository skillRepository;
-    private final StudentRepository studentRepository;
+        private final ProjectRepository projectRepository;
+        private final TeacherRepository teacherRepository;
+        private final SkillRepository skillRepository;
+        private final StudentRepository studentRepository;
 
-    public ProjectController(
-            ProjectRepository projectRepository,
-            TeacherRepository teacherRepository,
-            SkillRepository skillRepository,
-            StudentRepository studentRepository
-    ) {
-       this.projectRepository = projectRepository;
-       this.teacherRepository = teacherRepository;
-       this.skillRepository = skillRepository;
-       this.studentRepository = studentRepository;
-    }
-
-    @PostMapping
-    public Project createProject(@RequestBody ProjectCreateRequest request) {
-
-        Teacher teacher = teacherRepository.findById(request.getTeacherId())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
-
-        List<Skill> skills = skillRepository.findAllById(request.getRequiredSkillIds());
-
-        Project project = new Project();
-        project.setTitle(request.getTitle());
-        project.setDescription(request.getDescription());
-        project.setDeadline(request.getDeadline());
-        project.setTeacher(teacher);
-        project.setRequiredSkills(skills);
-
-        return projectRepository.save(project);
-    }
-
-    @GetMapping
-    public List<Project> getAllProjects() {
-        return projectRepository.findAll();
-    }
-
-    @GetMapping("/teacher/{teacherId}")
-    public List<Project> getProjectsByTeacher(@PathVariable Long teacherId) {
-        return projectRepository.findByTeacherId(teacherId);
-    }
-
-    @GetMapping("/{projectId}/matched-students")
-    public List<MatchedStudentsDTO> getMatchedStudents(
-            @PathVariable Long projectId,
-            @RequestParam(required = false) String department,
-            @RequestParam(required = false) String academicYear,
-            @RequestParam(required = false) String availabilityStatus,
-            @RequestParam(required = false) String skill
-    ) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
-
-        List<String> requiredSkillNames = project.getRequiredSkills()
-                .stream()
-                .map(s -> s.getName())
-                .toList();
-
-        return studentRepository.findAll().stream()
-                .map(student -> {
-                    List<String> matchedSkills = student.getSkills().stream()
-                            .map(ss -> ss.getSkill().getName())
-                            .filter(requiredSkillNames::contains)
-                            .toList();
-
-                    return new MatchedStudentsDTO(
-                            student.getId(),
-                            student.getName(),
-                            student.getDepartment().name(),
-                            student.getAcademicYear().name(),
-                            student.getAvailabilityStatus().name(),
-                            matchedSkills
-                    );
-                })
-                .filter(dto -> dto != null)
-                .filter(dto -> department == null || dto.getDepartment().equals(department))
-                .filter(dto -> academicYear == null || dto.getAcademicYear().equals(academicYear))
-                .filter(dto -> availabilityStatus == null || dto.getAvailabilityStatus().equals(availabilityStatus))
-                .filter(dto -> skill == null || dto.getMatchedSkills().contains(skill))
-                .toList();
-    }
-    @PutMapping("/{projectId}")
-    public Project updateProject(
-            @PathVariable Long projectId,
-            @RequestBody Map<String, Object> payload
-    ) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
-
-        project.setTitle((String) payload.get("title"));
-        project.setDescription((String) payload.get("description"));
-        project.setDeadline(LocalDate.parse((String) payload.get("deadline")));
-
-        if (payload.get("requiredSkillIds") != null) {
-            List<Integer> skillIdsRaw = (List<Integer>) payload.get("requiredSkillIds");
-
-            List<Long> skillIds = skillIdsRaw.stream()
-                    .map(Long::valueOf)
-                    .toList();
-
-            List<Skill> skills = skillRepository.findAllById(skillIds);
-
-            project.setRequiredSkills(skills);
+        public ProjectController(
+                        ProjectRepository projectRepository,
+                        TeacherRepository teacherRepository,
+                        SkillRepository skillRepository,
+                        StudentRepository studentRepository) {
+                this.projectRepository = projectRepository;
+                this.teacherRepository = teacherRepository;
+                this.skillRepository = skillRepository;
+                this.studentRepository = studentRepository;
         }
 
-        return projectRepository.save(project);
-    }
+        @PostMapping
+        public Project createProject(@RequestBody ProjectCreateRequest request) {
+
+                Teacher teacher = teacherRepository.findById(request.getTeacherId())
+                                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+                List<Skill> skills = skillRepository.findAllById(request.getRequiredSkillIds());
+
+                Project project = new Project();
+                project.setTitle(request.getTitle());
+                project.setDescription(request.getDescription());
+                project.setDeadline(request.getDeadline());
+                project.setTeacher(teacher);
+                project.setRequiredSkills(skills);
+
+                return projectRepository.save(project);
+        }
+
+        @GetMapping
+        public List<Project> getAllProjects() {
+                return projectRepository.findAll();
+        }
+
+        @GetMapping("/teacher/{teacherId}")
+        public List<Project> getProjectsByTeacher(@PathVariable Long teacherId) {
+                return projectRepository.findByTeacherId(teacherId);
+        }
+
+        @GetMapping("/{projectId}/matched-students")
+        public List<MatchedStudentsDTO> getMatchedStudents(
+                        @PathVariable Long projectId,
+                        @RequestParam(required = false) String department,
+                        @RequestParam(required = false) String academicYear,
+                        @RequestParam(required = false) String availabilityStatus,
+                        @RequestParam(required = false) String skill) {
+                Project project = projectRepository.findById(projectId)
+                                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+                List<String> requiredSkillNames = project.getRequiredSkills()
+                                .stream()
+                                .map(s -> s.getName())
+                                .toList();
+
+                return studentRepository.findAll().stream()
+                                .map(student -> {
+                                        List<String> matchedSkills = student.getSkills().stream()
+                                                        .map(ss -> ss.getSkill().getName())
+                                                        .filter(requiredSkillNames::contains)
+                                                        .toList();
+
+                                        return new MatchedStudentsDTO(
+                                                        student.getId(),
+                                                        student.getName(),
+                                                        student.getDepartment().name(),
+                                                        student.getAcademicYear().name(),
+                                                        student.getAvailabilityStatus().name(),
+                                                        matchedSkills);
+                                })
+                                .filter(dto -> dto != null)
+                                .filter(dto -> department == null || dto.getDepartment().equals(department))
+                                .filter(dto -> academicYear == null || dto.getAcademicYear().equals(academicYear))
+                                .filter(dto -> availabilityStatus == null
+                                                || dto.getAvailabilityStatus().equals(availabilityStatus))
+                                .filter(dto -> skill == null || dto.getMatchedSkills().contains(skill))
+                                .toList();
+        }
+
+        @PutMapping("/{projectId}")
+        public Project updateProject(
+                        @PathVariable Long projectId,
+                        @RequestBody Map<String, Object> payload) {
+                Project project = projectRepository.findById(projectId)
+                                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+                project.setTitle((String) payload.get("title"));
+                project.setDescription((String) payload.get("description"));
+
+                String deadlineStr = (String) payload.get("deadline");
+                if (deadlineStr != null && !deadlineStr.trim().isEmpty()) {
+                        project.setDeadline(LocalDate.parse(deadlineStr));
+                }
+
+                if (payload.get("requiredSkillIds") != null) {
+                        List<Integer> skillIdsRaw = (List<Integer>) payload.get("requiredSkillIds");
+
+                        List<Long> skillIds = skillIdsRaw.stream()
+                                        .map(Long::valueOf)
+                                        .toList();
+
+                        List<Skill> skills = skillRepository.findAllById(skillIds);
+
+                        project.setRequiredSkills(skills);
+                }
+
+                return projectRepository.save(project);
+        }
 }

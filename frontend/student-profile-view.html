@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile - SSMS</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -14,14 +18,14 @@
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="8" fill="#2563eb"/>
-                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
-                        <circle cx="20" cy="20" r="3" fill="white"/>
+                        <rect width="40" height="40" rx="8" fill="#2563eb" />
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
                     </svg>
                     <span>SSMS</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-menu">
                 <a href="teacher-dashboard.html" class="menu-item">
                     <span class="menu-icon">📊</span>
@@ -40,7 +44,7 @@
                     <span>My Projects</span>
                 </a>
             </nav>
-            
+
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <div class="user-avatar">NK</div>
@@ -49,7 +53,8 @@
                         <p>Teacher</p>
                     </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="logout()" style="width: 100%; margin-top: 1rem;">Logout</button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()"
+                    style="width: 100%; margin-top: 1rem;">Logout</button>
             </div>
         </aside>
 
@@ -73,28 +78,43 @@
                             HV
                         </div>
                         <div style="flex: 1;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                                 <div>
-                                    <h2 style="font-family: 'Montserrat', sans-serif; font-size: 2rem; margin-bottom: 0.5rem;" id="viewStudentName">Student Name</h2>
-                                    <p style="color: var(--text-secondary); font-size: 1.125rem;" id="viewStudentEmail">email@example.com</p>
+                                    <h2 style="font-family: 'Montserrat', sans-serif; font-size: 2rem; margin-bottom: 0.5rem;"
+                                        id="viewStudentName">Student Name</h2>
+                                    <p style="color: var(--text-secondary); font-size: 1.125rem;" id="viewStudentEmail">
+                                        email@example.com</p>
                                 </div>
                                 <span class="badge badge-success" id="viewStudentStatus">Available</span>
                             </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
                                 <div>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.25rem;">Department</p>
-                                    <p style="font-weight: 600; color: var(--text-primary); font-size: 1.125rem;" id="viewStudentDepartment">-</p>
+                                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.25rem;">
+                                        Department</p>
+                                    <p style="font-weight: 600; color: var(--text-primary); font-size: 1.125rem;"
+                                        id="viewStudentDepartment">-</p>
                                 </div>
                                 <div>
-                                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.25rem;">Academic Year</p>
-                                    <p style="font-weight: 600; color: var(--text-primary); font-size: 1.125rem;" id="viewStudentYear">-</p>
+                                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.25rem;">
+                                        Academic Year</p>
+                                    <p style="font-weight: 600; color: var(--text-primary); font-size: 1.125rem;"
+                                        id="viewStudentYear">-</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                        <button class="btn btn-primary" onclick="alert('Invitation sent successfully!')">Send Project Invitation</button>
+                    <div
+                        style="display: flex; gap: 1rem; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                        <select id="projectSelector" class="form-control" style="max-width: 300px; margin: 0;">
+                            <option value="">-- Select Project for Invitation --</option>
+                        </select>
+                        <button class="btn btn-primary"
+                            onclick="handleSendInvitation(localStorage.getItem('viewStudentId'), this)">
+                            Send Project Invitation
+                        </button>
                         <button class="btn btn-secondary">Send Message</button>
                     </div>
                 </div>
@@ -120,30 +140,44 @@
                 <div class="card-body">
                     <div style="display: grid; gap: 1rem;">
                         <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                 <span style="font-weight: 600; color: var(--text-primary);">Overall Skill Level</span>
-                                <span style="font-weight: 700; color: var(--primary-color); font-size: 1.25rem;">3.5 / 5</span>
+                                <span style="font-weight: 700; color: var(--primary-color); font-size: 1.25rem;">3.5 /
+                                    5</span>
                             </div>
-                            <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
-                                <div style="width: 70%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));"></div>
+                            <div
+                                style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden;">
+                                <div
+                                    style="width: 70%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));">
+                                </div>
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
-                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Total Skills</p>
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div
+                                style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Total
+                                    Skills</p>
                                 <p style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">4</p>
                             </div>
-                            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
-                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Expert Level (5)</p>
+                            <div
+                                style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                    Expert Level (5)</p>
                                 <p style="font-size: 2rem; font-weight: 700; color: var(--success-color);">0</p>
                             </div>
-                            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
-                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Advanced (4)</p>
+                            <div
+                                style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                    Advanced (4)</p>
                                 <p style="font-size: 2rem; font-weight: 700; color: var(--secondary-color);">2</p>
                             </div>
-                            <div style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
-                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Intermediate (3)</p>
+                            <div
+                                style="padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; text-align: center;">
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                    Intermediate (3)</p>
                                 <p style="font-size: 2rem; font-weight: 700; color: var(--warning-color);">2</p>
                             </div>
                         </div>
@@ -152,24 +186,33 @@
             </div>
 
             <!-- Project Suitability -->
-            <div class="card" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(14, 165, 233, 0.05));">
+            <div class="card"
+                style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(14, 165, 233, 0.05));">
                 <div class="card-header">
                     <h2 class="card-title">💡 Project Suitability</h2>
                 </div>
                 <div class="card-body">
-                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Based on this student's skills, they would be suitable for:</p>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Based on this student's skills, they
+                        would be suitable for:</p>
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--success-color);">
-                            <p style="font-weight: 600; color: var(--text-primary);">✅ Full-Stack Web Development Projects</p>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Strong skills in JavaScript, React, and Node.js</p>
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--success-color);">
+                            <p style="font-weight: 600; color: var(--text-primary);">✅ Full-Stack Web Development
+                                Projects</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Strong
+                                skills in JavaScript, React, and Node.js</p>
                         </div>
-                        <div style="padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--success-color);">
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--success-color);">
                             <p style="font-weight: 600; color: var(--text-primary);">✅ Frontend Development Tasks</p>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Good proficiency in modern frontend technologies</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Good
+                                proficiency in modern frontend technologies</p>
                         </div>
-                        <div style="padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--warning-color);">
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid var(--warning-color);">
                             <p style="font-weight: 600; color: var(--text-primary);">⚠️ Backend-Heavy Projects</p>
-                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">May need support with complex backend architecture</p>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">May need
+                                support with complex backend architecture</p>
                         </div>
                     </div>
                 </div>
@@ -179,4 +222,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>

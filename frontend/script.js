@@ -156,13 +156,13 @@ function showLoginModal(role) {
     currentUserRole = role;
     const modal = document.getElementById('loginModal');
     const modalTitle = document.getElementById('modalTitle');
-    
+
     if (role === 'student') {
         modalTitle.textContent = 'Student Login';
     } else {
         modalTitle.textContent = 'Teacher Login';
     }
-    
+
     modal.style.display = 'block';
 }
 
@@ -191,8 +191,8 @@ async function handleLogin(event) {
 
     const url =
         currentUserRole === 'student'
-            ? 'http://localhost:8080/api/auth/student/login'
-            : 'http://localhost:8080/api/auth/teacher/login';
+            ? `${API_BASE_URL}/auth/student/login`
+            : `${API_BASE_URL}/auth/teacher/login`;
     try {
         const resp = await fetch(url, {
             method: 'POST',
@@ -231,7 +231,7 @@ async function handleLogin(event) {
 }
 
 // Close modal when clicking outside
-window.onclick = function(event) {
+window.onclick = function (event) {
     const modal = document.getElementById('loginModal');
     if (event.target == modal) {
         closeLoginModal();
@@ -248,10 +248,10 @@ async function fetchTeacherProfile() {
     const storedId = localStorage.getItem('userId');
     const teacherId = storedId ? parseInt(storedId, 10) : 1;
     const url = `${API_BASE_URL}/teachers/${teacherId}`;
-    
+
     console.log('🌐 Fetching teacher profile from:', url);
     const authHeaders = getAuthHeaders();
-    
+
     const resp = await fetch(url, {
         method: 'GET',
         headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
@@ -283,12 +283,12 @@ function loadTeacherProfile() {
                 const teacher = await fetchTeacherProfile();
                 const teacherName = teacher.name;
                 console.log('✅ Teacher profile loaded:', teacherName);
-                
+
                 if (sidebarNameEl) {
                     if ('value' in sidebarNameEl) sidebarNameEl.value = teacherName;
                     else sidebarNameEl.textContent = teacherName;
                 }
-                
+
                 if (sidebarAvatarEl) {
                     const initials = teacherName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('');
                     sidebarAvatarEl.textContent = initials;
@@ -332,15 +332,15 @@ async function fetchAllSkills() {
 async function loadAllSkills() {
     const dropdown = document.getElementById('skillName');
     if (!dropdown) return;
-    
+
     try {
         const resp = await fetch(`${API_BASE_URL}/skills`, {
             method: 'GET',
             headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
         });
-        
+
         if (!resp.ok) throw new Error(`Failed to fetch skills: ${resp.status}`);
-        
+
         availableSkills = await resp.json();
         dropdown.innerHTML = '<option value="">-- Select a skill --</option>';
         availableSkills.forEach(skill => {
@@ -362,12 +362,12 @@ async function fetchStudentProfile() {
     // prefer the logged-in userId saved during login
     const storedId = localStorage.getItem('userId');
     const studentId = storedId ? parseInt(storedId, 10) : 1;
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${studentId}/profile`;
-    
+    const url = `${API_BASE_URL}/students/${studentId}/profile`;
+
     console.log('🌐 Fetching student profile from:', url);
     const authHeaders = getAuthHeaders();
     console.log('🔐 Auth headers:', Object.keys(authHeaders).length > 0 ? 'Present' : 'None');
-    
+
     const resp = await fetch(url, {
         method: 'GET',
         headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
@@ -391,7 +391,7 @@ async function fetchStudentProfile() {
 // Fetch a student profile by id (used by teacher view)
 async function fetchStudentById(id) {
     if (!API_BASE_URL) throw new Error('API_BASE_URL not configured');
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/students/${id}/profile`;
+    const url = `${API_BASE_URL}/students/${id}/profile`;
     const resp = await fetch(url, { method: 'GET', headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders()) });
     if (!resp.ok) {
         const text = await resp.text().catch(() => '');
@@ -473,7 +473,7 @@ async function loadStudentProfile() {
     }
     if (sidebarAvatarEl) {
         const displayName = nameVal || getFirst(currentStudent, ['name']) || '';
-        const initials = displayName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0,2).join('') || 'U';
+        const initials = displayName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('') || 'U';
         sidebarAvatarEl.textContent = initials;
     }
 
@@ -512,17 +512,17 @@ async function loadStudentProfile() {
     }
 
     loadStudentSkills();
-    try { populateSocialLinks(); } catch (e) {}
+    try { populateSocialLinks(); } catch (e) { }
 }
 
 function renderStudentSkills(studentSkills = []) {
     const container = document.getElementById('skillsDisplay');
     if (!container) return;
-    
+
     container.innerHTML = '';
 
     if (!Array.isArray(studentSkills)) studentSkills = [];
-    
+
     studentSkills.forEach(studentSkill => {
         const skillId = studentSkill.id;
         const skillName = studentSkill.skill.name;
@@ -549,36 +549,36 @@ function renderStudentSkills(studentSkills = []) {
 function createSkillTag(skill, showRemove = false) {
     const tag = document.createElement('div');
     tag.className = 'skill-tag';
-    
+
     // Backend format: id is the StudentSkill ID, skillName and proficiency are properties
     const studentSkillId = skill.id ? parseInt(skill.id, 10) : null;
     const skillName = skill.skillName || 'Unknown';
     const proficiency = skill.proficiency || 1;
-    
-    const levels = Array.from({length: 5}, (_, i) => 
+
+    const levels = Array.from({ length: 5 }, (_, i) =>
         `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
     ).join('');
-    
+
     tag.innerHTML = `
         <span>${skillName}</span>
         <span class="skill-level">${levels}</span>
         ${showRemove && studentSkillId ? '<button onclick="deleteStudentSkill(' + studentSkillId + ')">×</button>' : ''}
     `;
-    
+
     return tag;
 }
 
 async function loadStudentSkills() {
     const studentId = currentStudent?.id || parseInt(localStorage.getItem('userId'), 10) || 1;
-    
+
     try {
         const resp = await fetch(`${API_BASE_URL}/student-skills/student/${studentId}`, {
             method: 'GET',
             headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
         });
-        
+
         if (!resp.ok) throw new Error(`Failed to fetch student skills: ${resp.status}`);
-        
+
         const studentSkills = await resp.json();
         renderStudentSkills(studentSkills);
     } catch (err) {
@@ -590,21 +590,21 @@ async function loadStudentSkills() {
 function addSkill() {
     const skillId = parseInt(document.getElementById('skillName').value);
     const skillLevel = parseInt(document.getElementById('skillLevel').value);
-    
+
     if (!skillId) {
         alert('Please select a skill');
         return;
     }
-    
+
     // Find the skill from availableSkills
     const skill = availableSkills.find(s => s.id === skillId);
     if (!skill) {
         alert('Selected skill not found');
         return;
     }
-    
+
     const skillName = skill.name;
-    
+
     // Check if skill already exists
     const exists = currentStudent.skills.some(s => {
         return (s.id === skillId) || ((s.skillName || '').toLowerCase() === skillName.toLowerCase());
@@ -613,9 +613,9 @@ function addSkill() {
         alert('This skill already exists in your profile');
         return;
     }
-    
+
     const studentId = currentStudent && currentStudent.id ? currentStudent.id : 1;
-    
+
     if (!API_BASE_URL) {
         // Local-only addition for mock data
         currentStudent.skills.push({ id: skillId, skillName: skillName, proficiency: skillLevel });
@@ -625,7 +625,7 @@ function addSkill() {
         showNotification('Skill added successfully!', 'success');
         return;
     }
-    
+
     const url = `${API_BASE_URL}/student-skills?studentId=${studentId}&skillId=${skillId}&proficiency=${skillLevel}`;
     fetch(url, {
         method: 'POST',
@@ -635,13 +635,13 @@ function addSkill() {
             const txt = await resp.text().catch(() => '');
             throw new Error(`Add skill failed: ${resp.status} ${resp.statusText} ${txt}`);
         }
-        
+
         showNotification('Skill added successfully!', 'success');
-        
+
         // Clear inputs
         document.getElementById('skillName').value = '';
         document.getElementById('skillLevel').value = '3';
-        
+
         // Reload student skills
         try {
             await loadStudentSkills();
@@ -761,8 +761,8 @@ function updateProfile() {
         const updated = await resp.json().catch(() => null);
         if (updated) currentStudent = Object.assign({}, currentStudent, updated);
         showNotification('Profile updated successfully!', 'success');
-        try { populateSocialLinks(); } catch (e) {}
-        try { loadStudentProfile(); } catch (e) {}
+        try { populateSocialLinks(); } catch (e) { }
+        try { loadStudentProfile(); } catch (e) { }
     }).catch(err => {
         console.error(err);
         showNotification('Failed to update profile. See console.', 'danger');
@@ -806,7 +806,7 @@ function populateSocialLinks() {
             const v = currentStudent[k];
             if (v !== undefined && v !== null && String(v).toLowerCase() !== 'null' && String(v).trim() !== '') { val = String(v).trim(); break; }
         }
-        
+
         // Update form input field
         if (formInput) {
             formInput.value = val || '';
@@ -837,10 +837,10 @@ async function fetchStudentInvitations() {
 
     const storedId = localStorage.getItem('userId');
     const studentId = storedId ? parseInt(storedId, 10) : 1;
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/invitations/student/${studentId}`;
-    
+    const url = `${API_BASE_URL}/invitations/student/${studentId}`;
+
     console.log('🌐 Calling API:', url);
-    
+
     const resp = await fetch(url, {
         method: 'GET',
         headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
@@ -863,15 +863,15 @@ async function fetchStudentInvitations() {
 function loadStudentInvitations() {
     console.log("🔥 loadStudentInvitations called");
     const tbody = document.getElementById('invitationsTableBody');
-    
+
     if (!tbody) {
         console.error('❌ invitationsTableBody element not found on the page');
         return;
     }
-    
+
     console.log('✅ invitationsTableBody found, starting to load invitations');
     tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading invitations...</td></tr>';
-    
+
     if (!API_BASE_URL) {
         console.log('⚠️ No API_BASE_URL configured, using mock data');
         // fallback to mock data if no API configured
@@ -910,11 +910,11 @@ function renderInvitationRow(tbody, invitation) {
     const status = invitation.status || 'PENDING';
     const statusUpper = String(status).toUpperCase();
     const badgeClass = statusUpper === 'PENDING' ? 'warning' : statusUpper === 'ACCEPTED' ? 'success' : 'rejected' === statusUpper ? 'danger' : 'secondary';
-    
+
     const projectTitle = invitation.project?.title || 'N/A';
     const teacherName = invitation.project?.teacher?.name || 'N/A';
     const deadline = invitation.project?.deadline || 'N/A';
-    
+
     tr.innerHTML = `
         <td>${projectTitle}</td>
         <td>${teacherName}</td>
@@ -943,8 +943,8 @@ async function respondToInvitation(invitationId, response) {
     }
 
     const endpoint = response === 'ACCEPTED' ? 'accept' : 'reject';
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/invitations/${invitationId}/${endpoint}`;
-    
+    const url = `${API_BASE_URL}/invitations/${invitationId}/${endpoint}`;
+
     try {
         const resp = await fetch(url, {
             method: 'POST',
@@ -1008,7 +1008,7 @@ async function createProject(event) {
         teacherId
     };
 
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/projects`;
+    const url = `${API_BASE_URL}/projects`;
     try {
         const resp = await fetch(url, {
             method: 'POST',
@@ -1038,11 +1038,11 @@ function addRequiredSkill() {
     const skillItem = document.createElement('div');
     skillItem.className = 'required-skill-item';
     skillItem.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 1rem; align-items: end;';
-    
-    const skillOptions = availableSkills.map(skill => 
+
+    const skillOptions = availableSkills.map(skill =>
         `<option value="${skill.id}" data-skill-name="${skill.name}">${skill.name}</option>`
     ).join('');
-    
+
     skillItem.innerHTML = `
         <div class="form-group" style="margin: 0;">
             <label>Skill Name</label>
@@ -1057,7 +1057,7 @@ function addRequiredSkill() {
         </div>
         <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">Remove</button>
     `;
-    
+
     container.appendChild(skillItem);
 }
 
@@ -1067,10 +1067,10 @@ function searchStudents() {
     const year = document.getElementById('yearFilter').value;
     const availability = document.getElementById('availabilityFilter').value;
     const skillFilter = document.getElementById('skillFilter').value.toLowerCase();
-    
+
     let filteredStudents = mockStudents.filter(student => {
-        const matchesSearch = student.name.toLowerCase().includes(searchTerm) || 
-                            student.email.toLowerCase().includes(searchTerm);
+        const matchesSearch = student.name.toLowerCase().includes(searchTerm) ||
+            student.email.toLowerCase().includes(searchTerm);
         const matchesDept = !department || student.department === department;
         const matchesYear = !year || student.year === year;
         const matchesAvailability = !availability || student.availabilityStatus === availability;
@@ -1079,36 +1079,36 @@ function searchStudents() {
             const skillName = s.skillName || '';
             return skillName.toLowerCase().includes(skillFilter);
         });
-        
+
         return matchesSearch && matchesDept && matchesYear && matchesAvailability && matchesSkill;
     });
-    
+
     displaySearchResults(filteredStudents);
 }
 
 function displaySearchResults(students) {
     const resultsContainer = document.getElementById('searchResults');
     if (!resultsContainer) return;
-    
+
     resultsContainer.innerHTML = '';
-    
+
     if (students.length === 0) {
         resultsContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No students found matching your criteria.</p>';
         return;
     }
-    
+
     students.forEach(student => {
         const card = document.createElement('div');
         card.className = 'card';
         card.style.cssText = 'cursor: pointer; transition: all 0.3s ease;';
-        card.onmouseover = function() { this.style.transform = 'translateY(-4px)'; this.style.boxShadow = 'var(--shadow-md)'; };
-        card.onmouseout = function() { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'var(--shadow-sm)'; };
-        
+        card.onmouseover = function () { this.style.transform = 'translateY(-4px)'; this.style.boxShadow = 'var(--shadow-md)'; };
+        card.onmouseout = function () { this.style.transform = 'translateY(0)'; this.style.boxShadow = 'var(--shadow-sm)'; };
+
         const skillsHTML = (student.skills || []).map(skill => {
             // Backend format: skillName and proficiency
             const skillName = skill.skillName || 'Unknown';
             const proficiency = skill.proficiency || 1;
-            const levels = Array.from({length: 5}, (_, i) => 
+            const levels = Array.from({ length: 5 }, (_, i) =>
                 `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
             ).join('');
             return `
@@ -1118,7 +1118,7 @@ function displaySearchResults(students) {
                 </div>
             `;
         }).join('');
-        
+
         const humanDept = humanizeDepartment(student.department);
         const humanYear = humanizeYear(student.year);
         const humanAvailability = humanizeAvailability(student.availabilityStatus);
@@ -1139,10 +1139,10 @@ function displaySearchResults(students) {
             </div>
             <div style="display: flex; gap: 0.75rem;">
                 <button class="btn btn-primary btn-sm" onclick="viewStudentProfile(${student.id})">View Profile</button>
-                <button class="btn btn-secondary btn-sm" onclick="sendInvitation(${student.id})">Send Invitation</button>
+                <button class="btn btn-secondary btn-sm" onclick="handleSendInvitation(${student.id}, this)">Send Invitation</button>
             </div>
         `;
-        
+
         resultsContainer.appendChild(card);
     });
 }
@@ -1152,7 +1152,42 @@ function viewStudentProfile(studentId) {
     window.location.href = 'student-profile-view.html';
 }
 
-window.sendInvitation = async function(projectId, studentId, buttonEl) {
+function handleSendInvitation(studentId, buttonEl) {
+    const selector = document.getElementById('projectSelector');
+    if (!selector) {
+        showNotification('Project selector not found', 'danger');
+        return;
+    }
+    const projectId = selector.value;
+    if (!projectId) {
+        showNotification('Please select a project first to invite a student', 'warning');
+        return;
+    }
+    sendInvitation(projectId, studentId, buttonEl);
+}
+
+async function loadTeacherProjectsForDropdown() {
+    const selector = document.getElementById('projectSelector');
+    if (!selector) return;
+
+    try {
+        let projects = mockProjects;
+        if (API_BASE_URL) {
+            projects = await fetchTeacherProjects();
+        }
+
+        projects.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.title;
+            selector.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Error loading projects for dropdown:', err);
+    }
+}
+
+async function sendInvitation(projectId, studentId, buttonEl) {
     alert("INVITATION SENT!");
     console.log("INVITE CLICKED", projectId, studentId);
 
@@ -1162,11 +1197,12 @@ window.sendInvitation = async function(projectId, studentId, buttonEl) {
     }
 
     try {
-        const resp = await fetch("http://localhost:8080/api/invitations", {
+        const url = `${API_BASE_URL}/invitations`;
+        const resp = await fetch(url, {
             method: "POST",
-            headers: {
+            headers: Object.assign({
                 "Content-Type": "application/json"
-            },
+            }, getAuthHeaders()),
             body: JSON.stringify({
                 projectId: projectId,
                 studentId: studentId
@@ -1199,6 +1235,7 @@ window.sendInvitation = async function(projectId, studentId, buttonEl) {
 }
 
 async function loadMatchedStudents(projectId) {
+    localStorage.setItem("selectedProjectId", projectId);
     const container = document.getElementById('matchedStudentsContainer');
     if (!container) return;
 
@@ -1235,8 +1272,8 @@ function renderMatchedStudents(students = [], projectId) {
         const card = document.createElement('div');
         card.className = 'card';
         card.style.cssText = 'transition: all 0.3s ease;';
-        card.onmouseover = function() { this.style.boxShadow = 'var(--shadow-md)'; };
-        card.onmouseout = function() { this.style.boxShadow = 'var(--shadow-sm)'; };
+        card.onmouseover = function () { this.style.boxShadow = 'var(--shadow-md)'; };
+        card.onmouseout = function () { this.style.boxShadow = 'var(--shadow-sm)'; };
 
         const humanDept = humanizeDepartment(student.department);
         const humanYear = humanizeYear(student.academicYear);
@@ -1272,17 +1309,17 @@ async function fetchTeacherProjects() {
     // Get the teacher ID from localStorage
     const storedId = localStorage.getItem('userId');
     const teacherId = storedId ? parseInt(storedId, 10) : null;
-    
+
     if (!teacherId) {
         throw new Error('Teacher ID not found - user not logged in');
     }
 
-    const url = `${API_BASE_URL.replace(/\/$/, '')}/projects/teacher/${teacherId}`;
-    
+    const url = `${API_BASE_URL}/projects/teacher/${teacherId}`;
+
     console.log('🌐 Fetching teacher projects from:', url);
     const authHeaders = getAuthHeaders();
     console.log('🔐 Auth headers:', Object.keys(authHeaders).length > 0 ? 'Present' : 'None');
-    
+
     const resp = await fetch(url, {
         method: 'GET',
         headers: Object.assign({ 'Accept': 'application/json' }, authHeaders)
@@ -1306,13 +1343,13 @@ async function fetchTeacherProjects() {
 function loadMyProjects() {
     const container = document.getElementById('myProjectsContainer');
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     // Try to fetch from API, fall back to mock data
     (async () => {
         let projects = [];
-        
+
         try {
             console.log('📋 Starting projects load, API_BASE_URL:', API_BASE_URL);
             if (API_BASE_URL) {
@@ -1344,11 +1381,11 @@ function loadMyProjects() {
         projects.forEach(project => {
             const card = document.createElement('div');
             card.className = 'card';
-            
-            const skillsHTML = (project.requiredSkills || []).map(skill => 
+
+            const skillsHTML = (project.requiredSkills || []).map(skill =>
                 `<span class="project-skill-badge">${skill.name}</span>`
             ).join("");
-            
+
             card.innerHTML = `
                 <div class="card-header">
                     <h3 class="card-title">${project.title}</h3>
@@ -1365,7 +1402,7 @@ function loadMyProjects() {
                     </div>
                 </div>
             `;
-            
+
             container.appendChild(card);
         });
 
@@ -1403,7 +1440,7 @@ async function loadStudentProfileView() {
     document.getElementById('viewStudentName').textContent = student.name || '';
     document.getElementById('viewStudentEmail').textContent = student.email || '';
     document.getElementById('viewStudentDepartment').textContent = humanizeDepartment(student.department);
-    document.getElementById('viewStudentYear').textContent = humanizeYear(student.year);
+    document.getElementById('viewStudentYear').textContent = humanizeYear(student.academicYear || student.year);
 
     const statusBadge = document.getElementById('viewStudentStatus');
     statusBadge.textContent = humanizeAvailability(student.availabilityStatus);
@@ -1434,9 +1471,9 @@ function showNotification(message, type = 'success') {
         animation: slideDown 0.3s ease;
     `;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.animation = 'fadeIn 0.3s ease reverse';
         setTimeout(() => notification.remove(), 300);
@@ -1489,7 +1526,7 @@ function logout() {
 }
 
 // Initialize page based on current page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Detect page context using DOM element presence
     const hasStudentName = document.getElementById('studentName');
     const hasInvitationsTable = document.getElementById('invitationsTableBody');
@@ -1514,6 +1551,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (hasSearchResults) {
         console.log('🔍 Teacher search page detected - loading teacher profile and displaying results');
         loadTeacherProfile();
+        loadTeacherProjectsForDropdown();
         displaySearchResults(mockStudents);
     } else if (hasMyProjects) {
         console.log('📋 Teacher projects page detected - loading projects and teacher profile');
@@ -1522,6 +1560,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (hasViewStudent) {
         console.log('👀 Student profile view page detected - loading student data');
         loadTeacherProfile();
+        loadTeacherProjectsForDropdown();
         loadStudentProfileView();
     } else if (hasRequiredSkillsContainer) {
         console.log('➕ Create project page detected - loading teacher profile and skills');
