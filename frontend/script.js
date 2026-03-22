@@ -1688,9 +1688,8 @@ async function loadTeacherDashboardStats() {
         if (projectsResp.ok) {
             const projects = await projectsResp.json();
 
-            // Filter and count active projects
-            const activeProjects = projects.filter(p => p.status === 'ACTIVE');
-            activeProjectsCount = activeProjects.length;
+            // Since no native 'status' property exists, compute all retrieved teacher projects as active
+            activeProjectsCount = projects.length;
 
             // Sort natively by ID descending (most recent first) and slice top 3
             const recentProjects = projects.sort((a, b) => b.id - a.id).slice(0, 3);
@@ -1703,7 +1702,6 @@ async function loadTeacherDashboardStats() {
                         `<span class="skill-tag">${skill.name}</span>`
                     ).join('');
 
-                    const statusClass = project.status === 'ACTIVE' ? 'badge-info' : 'badge-secondary';
                     const formattedDate = project.deadline ? new Date(project.deadline).toLocaleDateString() : 'No deadline';
 
                     return `
@@ -1716,7 +1714,7 @@ async function loadTeacherDashboardStats() {
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
-                                <span class="badge ${statusClass}">${project.status}</span>
+                                <span class="badge badge-info">Active</span>
                                 <p style="color: var(--text-light); font-size: 0.85rem;">Due: ${formattedDate}</p>
                             </div>
                         </div>
@@ -1836,6 +1834,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('📋 Teacher projects page detected - loading projects and teacher profile');
         loadTeacherProfile();
         loadMyProjects();
+        loadTeacherDashboardStats();
     } else if (hasViewStudent) {
         console.log('👀 Student profile view page detected - loading student data');
         loadTeacherProfile();

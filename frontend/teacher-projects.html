@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Projects - SkillBridge</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -15,14 +19,14 @@
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-                        <rect width="40" height="40" rx="8" fill="var(--primary-color)"/>
-                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none"/>
-                        <circle cx="20" cy="20" r="3" fill="white"/>
+                        <rect width="40" height="40" rx="8" fill="var(--primary-color)" />
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
                     </svg>
                     <span>SkillBridge</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-menu">
                 <a href="teacher-dashboard.html" class="menu-item">
                     <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
@@ -41,7 +45,7 @@
                     <span>My Projects</span>
                 </a>
             </nav>
-            
+
             <div class="sidebar-footer">
                 <div class="user-profile">
                     <div class="user-avatar" id="sidebarAvatar">T</div>
@@ -50,7 +54,8 @@
                         <p>Teacher</p>
                     </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="logout()" style="width: 100%; margin-top: 1rem;">Logout</button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()"
+                    style="width: 100%; margin-top: 1rem;">Logout</button>
             </div>
         </aside>
 
@@ -72,28 +77,28 @@
                 <div class="stat-card">
                     <div class="stat-icon blue"><i data-lucide="folder"></i></div>
                     <div class="stat-info">
-                        <h3>2</h3>
+                        <h3 id="teacherActiveProjectsStat">-</h3>
                         <p>Active Projects</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
                     <div class="stat-info">
-                        <h3>0</h3>
+                        <h3 id="teacherCompletedStat">0</h3>
                         <p>Completed</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon orange"><i data-lucide="mail"></i></div>
                     <div class="stat-info">
-                        <h3>3</h3>
+                        <h3 id="teacherInvitationsStat">-</h3>
                         <p>Invitations Sent</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon purple"><i data-lucide="users"></i></div>
                     <div class="stat-info">
-                        <h3>5</h3>
+                        <h3 id="teacherTotalStudentsStat">-</h3>
                         <p>Total Students</p>
                     </div>
                 </div>
@@ -108,9 +113,13 @@
             <div id="noProjectsMessage" style="display: none;">
                 <div class="card" style="text-align: center; padding: 4rem 2rem;">
                     <div style="font-size: 5rem; margin-bottom: 1.5rem;"><i data-lucide="folder"></i></div>
-                    <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary);">No Projects Yet</h3>
-                    <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem;">You haven't created any projects yet. Start by creating your first project and finding suitable students.</p>
-                    <a href="teacher-create-project.html" class="btn btn-primary" style="text-decoration: none;">Create Your First Project</a>
+                    <h3
+                        style="font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary);">
+                        No Projects Yet</h3>
+                    <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem;">You haven't created
+                        any projects yet. Start by creating your first project and finding suitable students.</p>
+                    <a href="teacher-create-project.html" class="btn btn-primary" style="text-decoration: none;">Create
+                        Your First Project</a>
                 </div>
             </div>
         </main>
@@ -118,4 +127,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
