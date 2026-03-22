@@ -330,10 +330,8 @@ async function fetchAllSkills() {
 }
 
 async function loadAllSkills() {
-    const dropdown = document.getElementById('skillName');
-    if (!dropdown) return;
-
     try {
+        if (!API_BASE_URL) return;
         const resp = await fetch(`${API_BASE_URL}/skills`, {
             method: 'GET',
             headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
@@ -342,13 +340,6 @@ async function loadAllSkills() {
         if (!resp.ok) throw new Error(`Failed to fetch skills: ${resp.status}`);
 
         availableSkills = await resp.json();
-        dropdown.innerHTML = '<option value="">-- Select a skill --</option>';
-        availableSkills.forEach(skill => {
-            const option = document.createElement('option');
-            option.value = skill.id;
-            option.textContent = skill.name;
-            dropdown.appendChild(option);
-        });
     } catch (err) {
         console.error('Failed to load skills:', err);
     }
@@ -524,17 +515,22 @@ function renderStudentSkills(studentSkills = []) {
     if (!Array.isArray(studentSkills)) studentSkills = [];
 
     studentSkills.forEach(studentSkill => {
-        const skillId = studentSkill.id;
-        const skillName = studentSkill.skill.name;
-        const proficiency = studentSkill.proficiency;
+        const studentSkillId = studentSkill.id;
+        const skillName = (studentSkill.skill && studentSkill.skill.name) || studentSkill.skillName || 'Unknown';
+        const proficiency = studentSkill.proficiency || 1;
 
         const card = document.createElement('div');
-        card.className = 'skill-card';
+        card.className = 'skill-tag';
+        card.style.cssText = 'display: inline-flex; align-items: center; padding: 0.5rem 0.75rem; font-size: 0.95rem; gap: 0.5rem; border: 1px solid var(--border-color); border-radius: 999px; background: white;';
+
+        const levels = Array.from({ length: 5 }, (_, i) =>
+            `<span class="level-dot ${i < proficiency ? 'filled' : ''}"></span>`
+        ).join('');
 
         card.innerHTML = `
-            <span>${skillName}</span>
-            <span>${'●'.repeat(proficiency)}</span>
-            <button onclick="deleteStudentSkill(${skillId})">×</button>
+            <span style="font-weight: 500;">${skillName}</span>
+            <span class="skill-level" style="display: flex; gap: 4px; align-items: center;">${levels}</span>
+            <button onclick="deleteStudentSkill(${studentSkillId})" class="delete-skill-btn" style="background: none; border: none; font-size: 1.25rem; line-height: 1; padding: 0 0 0 0.25rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
         `;
 
         container.appendChild(card);
@@ -587,71 +583,84 @@ async function loadStudentSkills() {
     }
 }
 
-function addSkill() {
-    const skillId = parseInt(document.getElementById('skillName').value);
-    const skillLevel = parseInt(document.getElementById('skillLevel').value);
+async function addSkill() {
+    const skillNameInputEl = document.getElementById('skillName');
+    if (!skillNameInputEl) return;
+    const skillNameStr = skillNameInputEl.value.trim();
+    const skillLevel = parseInt(document.getElementById('skillLevel').value) || 3;
 
-    if (!skillId) {
-        alert('Please select a skill');
-        return;
-    }
-
-    // Find the skill from availableSkills
-    const skill = availableSkills.find(s => s.id === skillId);
-    if (!skill) {
-        alert('Selected skill not found');
-        return;
-    }
-
-    const skillName = skill.name;
-
-    // Check if skill already exists
-    const exists = currentStudent.skills.some(s => {
-        return (s.id === skillId) || ((s.skillName || '').toLowerCase() === skillName.toLowerCase());
-    });
-    if (exists) {
-        alert('This skill already exists in your profile');
+    if (!skillNameStr) {
+        alert('Please enter a skill name');
         return;
     }
 
     const studentId = currentStudent && currentStudent.id ? currentStudent.id : 1;
 
-    if (!API_BASE_URL) {
-        // Local-only addition for mock data
-        currentStudent.skills.push({ id: skillId, skillName: skillName, proficiency: skillLevel });
-        displayStudentSkills();
-        document.getElementById('skillName').value = '';
-        document.getElementById('skillLevel').value = '3';
-        showNotification('Skill added successfully!', 'success');
-        return;
-    }
+    try {
+        let skillId = null;
+        let existingSkill = availableSkills.find(s => s.name.toLowerCase() === skillNameStr.toLowerCase());
 
-    const url = `${API_BASE_URL}/student-skills?studentId=${studentId}&skillId=${skillId}&proficiency=${skillLevel}`;
-    fetch(url, {
-        method: 'POST',
-        headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
-    }).then(async resp => {
-        if (!resp.ok) {
-            const txt = await resp.text().catch(() => '');
-            throw new Error(`Add skill failed: ${resp.status} ${resp.statusText} ${txt}`);
+        if (existingSkill) {
+            skillId = existingSkill.id;
+        } else if (API_BASE_URL) {
+            const createResp = await fetch(`${API_BASE_URL}/skills`, {
+                method: 'POST',
+                headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+                body: JSON.stringify({ name: skillNameStr })
+            });
+
+            if (!createResp.ok) throw new Error('Failed to create new skill in backend');
+            const createdSkill = await createResp.json();
+            skillId = createdSkill.id;
+            availableSkills.push(createdSkill);
+        } else {
+            skillId = Math.floor(Math.random() * 1000) + 100;
         }
 
-        showNotification('Skill added successfully!', 'success');
+        const alreadyHasSkill = currentStudent && currentStudent.skills && currentStudent.skills.some(s =>
+            (s.skill && s.skill.id === skillId) ||
+            (s.skillName && s.skillName.toLowerCase() === skillNameStr.toLowerCase())
+        );
 
-        // Clear inputs
-        document.getElementById('skillName').value = '';
-        document.getElementById('skillLevel').value = '3';
-
-        // Reload student skills
-        try {
-            await loadStudentSkills();
-        } catch (err) {
-            console.error('Error reloading skills:', err);
+        if (alreadyHasSkill) {
+            alert('This skill already exists in your profile');
+            return;
         }
-    }).catch(err => {
-        console.error(err);
+
+        if (API_BASE_URL) {
+            const url = `${API_BASE_URL}/student-skills?studentId=${studentId}&skillId=${skillId}&proficiency=${skillLevel}`;
+            const addResp = await fetch(url, {
+                method: 'POST',
+                headers: Object.assign({ 'Accept': 'application/json' }, getAuthHeaders())
+            });
+
+            if (!addResp.ok) {
+                const txt = await addResp.text().catch(() => '');
+                throw new Error(`Add skill failed: ${addResp.status} ${txt}`);
+            }
+
+            showNotification('Skill added successfully!', 'success');
+            skillNameInputEl.value = '';
+            document.getElementById('skillLevel').value = '3';
+
+            try {
+                await loadStudentSkills();
+            } catch (err) {
+                console.error('Error reloading skills:', err);
+            }
+        } else {
+            currentStudent.skills = currentStudent.skills || [];
+            currentStudent.skills.push({ id: Math.random() * 1000, skill: { id: skillId, name: skillNameStr }, proficiency: skillLevel });
+            renderStudentSkills(currentStudent.skills);
+            skillNameInputEl.value = '';
+            document.getElementById('skillLevel').value = '3';
+            showNotification('Skill added successfully!', 'success');
+        }
+
+    } catch (e) {
+        console.error('Error adding skill:', e);
         showNotification('Failed to add skill. See console.', 'danger');
-    });
+    }
 }
 
 async function deleteStudentSkill(id) {
