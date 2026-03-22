@@ -1508,19 +1508,25 @@ function loadMyProjects() {
                 `<span class="project-skill-badge">${skill.name}</span>`
             ).join("");
 
+            const statusStr = project.status || 'ACTIVE';
+            const statusLabel = statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase();
+            const statusClass = statusStr === 'ACTIVE' ? 'badge-info' : (statusStr === 'FINISHED' ? 'badge-primary' : 'badge-secondary');
+            const deadlineText = project.deadline ? new Date(project.deadline).toLocaleDateString() : 'No deadline';
+
             card.innerHTML = `
-                <div class="card-header">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: start;">
                     <h3 class="card-title">${project.title}</h3>
-                    <span class="badge badge-info">Active</span>
+                    <span class="badge ${statusClass}">${statusLabel}</span>
                 </div>
                 <div class="card-body">
                     <p style="margin-bottom: 1rem;">${project.description}</p>
                     <p style="margin-bottom: 0.5rem;"><strong>Required Skills:</strong></p>
                     <div class="skills-container" style="margin-bottom: 1rem;">${skillsHTML}</div>
-                    <p style="color: var(--text-secondary);"><strong>Deadline:</strong> ${project.deadline}</p>
-                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
-                        <button class="btn btn-primary btn-sm">View Candidates</button>
-                        <button class="btn btn-secondary btn-sm">Edit Project</button>
+                    <p style="color: var(--text-secondary);"><strong>Deadline:</strong> ${deadlineText}</p>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; align-items: center;">
+                        <button class="btn btn-primary btn-sm" onclick="window.location.href='project-candidates.html?id=${project.id}'">View Candidates</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.location.href='teacher-edit-project.html?id=${project.id}'">Edit Project</button>
+                        <button class="btn btn-sm" onclick="showDeleteModal(${project.id})" style="background-color: #ef4444; border-color: #ef4444; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; height: 32px; padding: 0 0.75rem; font-size: 0.875rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete</button>
                     </div>
                 </div>
             `;
@@ -1797,6 +1803,230 @@ function logout() {
     };
 }
 
+function showDeleteModal(projectId) {
+    const modalHtml = `
+        <div id="customDeleteModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px);">
+            <div style="background: var(--bg-primary); padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); max-width: 400px; width: 90%; text-align: center;">
+                <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: #ef4444;">
+                    <i data-lucide="alert-triangle" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">Delete Project?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">Are you sure you want to delete this project? This action cannot be undone and all associated candidates will be removed.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()" style="flex: 1;">Cancel</button>
+                    <button class="btn" onclick="confirmDeleteProject(${projectId})" style="flex: 1; background: #ef4444; border-color: #ef4444; color: white;">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('customDeleteModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function confirmDeleteProject(projectId) {
+    closeDeleteModal();
+    try {
+        const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            loadMyProjects();
+            if (typeof showNotification !== 'undefined') showNotification('Project deleted successfully.', 'success');
+        } else {
+            console.error('Failed to delete project');
+            if (typeof showNotification !== 'undefined') showNotification('Failed to delete project.', 'danger');
+        }
+    } catch (err) {
+        console.error('Deletion error:', err);
+    }
+}
+
+async function loadEditProject() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('id');
+    if (!projectId) return;
+
+    document.getElementById('editProjectForm').dataset.projectId = projectId;
+
+    try {
+        const teacherId = localStorage.getItem('userId');
+        const response = await fetch(`${API_BASE_URL}/projects/teacher/${teacherId}`, { headers: getAuthHeaders() });
+        if (response.ok) {
+            const projects = await response.json();
+            const project = projects.find(p => p.id == projectId);
+            if (project) {
+                document.getElementById('projectTitle').value = project.title;
+                document.getElementById('projectDescription').value = project.description;
+                if (project.deadline) document.getElementById('projectDeadline').value = project.deadline;
+                if (project.status) document.getElementById('projectStatus').value = project.status;
+
+                const container = document.getElementById('requiredSkillsContainer');
+                container.innerHTML = '';
+
+                if (project.requiredSkills && project.requiredSkills.length > 0) {
+                    project.requiredSkills.forEach(skill => {
+                        const item = document.createElement('div');
+                        item.className = 'required-skill-item';
+                        item.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 1rem; align-items: end;';
+                        item.innerHTML = `
+                            <div class="form-group" style="margin: 0;">
+                                <label>Skill Name</label>
+                                <input type="text" class="skill-name-input form-control" value="${skill.name}" required>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label>Min. Level (1-5)</label>
+                                <input type="number" class="skill-level-input form-control" min="1" max="5" value="3" required>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm" style="height: 48px;" onclick="this.parentElement.remove()">Remove</button>
+                         `;
+                        container.appendChild(item);
+                    });
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load edit project:', err);
+    }
+}
+
+async function updateProject(event) {
+    event.preventDefault();
+    const projectId = document.getElementById('editProjectForm').dataset.projectId;
+    if (!projectId) return;
+
+    const skillInputs = Array.from(document.querySelectorAll('.required-skill-item'));
+    const requiredSkillIds = [];
+
+    for (const item of skillInputs) {
+        const skillInputEl = item.querySelector('.skill-name-input');
+        const rawSkillName = skillInputEl.value.trim();
+
+        if (rawSkillName) {
+            let selectedSkill = availableSkills.find(s => s.name.toLowerCase() === rawSkillName.toLowerCase());
+            let targetSkillId;
+
+            if (selectedSkill) {
+                targetSkillId = selectedSkill.id;
+            } else if (API_BASE_URL) {
+                try {
+                    const createResp = await fetch(`${API_BASE_URL}/skills`, {
+                        method: 'POST',
+                        headers: Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, getAuthHeaders()),
+                        body: JSON.stringify({ name: rawSkillName, description: 'Created dynamically from edit project' })
+                    });
+                    if (createResp.ok) {
+                        const createdData = await createResp.json();
+                        targetSkillId = createdData.id;
+                        availableSkills.push(createdData);
+                    }
+                } catch (e) {
+                    console.error('Failed to create new skill:', e);
+                }
+            }
+
+            if (targetSkillId) {
+                requiredSkillIds.push(parseInt(targetSkillId));
+            }
+        }
+    }
+
+    try {
+        const projectData = {
+            title: document.getElementById('projectTitle').value,
+            description: document.getElementById('projectDescription').value,
+            deadline: document.getElementById('projectDeadline').value || null,
+            status: document.getElementById('projectStatus').value,
+            requiredSkillIds: requiredSkillIds
+        };
+
+        const resp = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+            method: 'PUT',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+            body: JSON.stringify(projectData)
+        });
+
+        if (resp.ok) {
+            if (typeof showNotification !== 'undefined') showNotification('Project updated successfully!', 'success');
+            setTimeout(() => { window.location.href = 'teacher-projects.html'; }, 1000);
+        } else {
+            if (typeof showNotification !== 'undefined') showNotification('Failed to update project.', 'danger');
+        }
+    } catch (err) {
+        console.error('Error updating project:', err);
+    }
+}
+
+async function loadProjectCandidates() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('id');
+    const container = document.getElementById('projectCandidatesContainer');
+    if (!projectId || !container) return;
+    const noCandidatesMessage = document.getElementById('noCandidatesMessage');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/invitations/project/${projectId}/accepted`, {
+            headers: getAuthHeaders()
+        });
+        if (response.ok) {
+            const invitations = await response.json();
+
+            if (invitations.length > 0 && invitations[0].project) {
+                document.getElementById('projectTitleHeader').textContent = invitations[0].project.title + ' Candidates';
+            }
+
+            if (invitations.length === 0) {
+                noCandidatesMessage.style.display = 'block';
+                return;
+            }
+            noCandidatesMessage.style.display = 'none';
+
+            container.innerHTML = '';
+            invitations.forEach(inv => {
+                const student = inv.student;
+                const skillsHtml = (student.skills || []).map(ss =>
+                    `<span class="skill-tag">${ss.skill.name}</span>`
+                ).join('');
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-body" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                        <div style="width: 64px; height: 64px; background: var(--bg-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-secondary); font-weight: 600;">
+                            ${student.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">${student.name}</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.5rem;">${student.department} • ${student.academicYear.replace('_', ' ')}</p>
+                            <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;"><i data-lucide="mail" style="width: 14px; height: 14px; vertical-align: middle;"></i> ${student.email}</p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                ${skillsHtml}
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end;">
+                            <span class="badge badge-info">Accepted</span>
+                            <button class="btn btn-secondary btn-sm" onclick="alert('Message feature coming soon!')">Message Candidate</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    } catch (err) {
+        console.error('Failed to load project candidates:', err);
+    }
+}
+
 // Initialize page based on current page
 document.addEventListener('DOMContentLoaded', function () {
     // Inject Lucide SVGs
@@ -1813,6 +2043,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const hasTeacherPage = document.getElementById('teacherPage');
     const hasRequiredSkillsContainer = document.getElementById('requiredSkillsContainer');
     const hasSkillsDisplay = document.getElementById('skillsDisplay');
+    const hasEditProject = document.getElementById('editProjectForm');
+    const hasProjectCandidates = document.getElementById('projectCandidatesContainer');
 
     if (hasInvitationsTable) {
         console.log('📧 Invitations page detected - loading data');
@@ -1840,11 +2072,19 @@ document.addEventListener('DOMContentLoaded', function () {
         loadTeacherProfile();
         loadTeacherProjectsForDropdown();
         loadStudentProfileView();
-    } else if (hasRequiredSkillsContainer) {
+    } else if (hasRequiredSkillsContainer && !hasEditProject) {
         console.log('➕ Create project page detected - loading teacher profile and skills');
         loadTeacherProfile();
         loadAllSkills();
-    } else if (hasTeacherPage && !hasMyProjects && !hasSearchResults && !hasRequiredSkillsContainer && !hasViewStudent) {
+    } else if (hasEditProject) {
+        console.log('✏️ Edit project page detected');
+        loadTeacherProfile();
+        loadEditProject();
+    } else if (hasProjectCandidates) {
+        console.log('👥 Project candidates page detected');
+        loadTeacherProfile();
+        loadProjectCandidates();
+    } else if (hasTeacherPage && !hasMyProjects && !hasSearchResults && !hasRequiredSkillsContainer && !hasViewStudent && !hasEditProject && !hasProjectCandidates) {
         console.log('👨‍🏫 Teacher page detected - loading dashboard stats');
         loadTeacherProfile();
         loadTeacherDashboardStats();

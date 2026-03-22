@@ -22,19 +22,19 @@ public class Project {
 
     private LocalDate deadline;
 
+    @Enumerated(EnumType.STRING)
+    private ProjectStatus status = ProjectStatus.ACTIVE;
+
     @ManyToOne
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
     @ManyToMany
-    @JoinTable(
-            name = "project_required_skills",
-            joinColumns = @JoinColumn(name = "project_id"),
-            inverseJoinColumns = @JoinColumn(name = "skill_id")
-    )
+    @JoinTable(name = "project_required_skills", joinColumns = @JoinColumn(name = "project_id"), inverseJoinColumns = @JoinColumn(name = "skill_id"))
     private List<Skill> requiredSkills;
 
-    public Project() {}
+    public Project() {
+    }
 
     public Long getId() {
         return id;
@@ -50,6 +50,10 @@ public class Project {
 
     public LocalDate getDeadline() {
         return deadline;
+    }
+
+    public ProjectStatus getStatus() {
+        return status;
     }
 
     public Teacher getTeacher() {
@@ -70,6 +74,10 @@ public class Project {
 
     public void setDeadline(LocalDate deadline) {
         this.deadline = deadline;
+    }
+
+    public void setStatus(ProjectStatus status) {
+        this.status = status;
     }
 
     public void setTeacher(Teacher teacher) {

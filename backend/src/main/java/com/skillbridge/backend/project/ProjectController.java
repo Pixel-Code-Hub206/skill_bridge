@@ -2,6 +2,7 @@ package com.skillbridge.backend.project;
 
 import com.skillbridge.backend.project.dto.MatchedStudentsDTO;
 import com.skillbridge.backend.project.dto.ProjectCreateRequest;
+import com.skillbridge.backend.invitation.ProjectInvitationRepository;
 import com.skillbridge.backend.skill.Skill;
 import com.skillbridge.backend.skill.SkillRepository;
 import com.skillbridge.backend.student.StudentRepository;
@@ -23,16 +24,19 @@ public class ProjectController {
         private final TeacherRepository teacherRepository;
         private final SkillRepository skillRepository;
         private final StudentRepository studentRepository;
+        private final ProjectInvitationRepository invitationRepository;
 
         public ProjectController(
                         ProjectRepository projectRepository,
                         TeacherRepository teacherRepository,
                         SkillRepository skillRepository,
-                        StudentRepository studentRepository) {
+                        StudentRepository studentRepository,
+                        ProjectInvitationRepository invitationRepository) {
                 this.projectRepository = projectRepository;
                 this.teacherRepository = teacherRepository;
                 this.skillRepository = skillRepository;
                 this.studentRepository = studentRepository;
+                this.invitationRepository = invitationRepository;
         }
 
         @PostMapping
@@ -112,6 +116,14 @@ public class ProjectController {
                 project.setTitle((String) payload.get("title"));
                 project.setDescription((String) payload.get("description"));
 
+                if (payload.get("status") != null) {
+                        try {
+                                project.setStatus(ProjectStatus.valueOf((String) payload.get("status")));
+                        } catch (IllegalArgumentException e) {
+                                // ignore invalid default status casts
+                        }
+                }
+
                 String deadlineStr = (String) payload.get("deadline");
                 if (deadlineStr != null && !deadlineStr.trim().isEmpty()) {
                         project.setDeadline(LocalDate.parse(deadlineStr));
@@ -130,5 +142,12 @@ public class ProjectController {
                 }
 
                 return projectRepository.save(project);
+        }
+
+        @DeleteMapping("/{projectId}")
+        public org.springframework.http.ResponseEntity<?> deleteProject(@PathVariable Long projectId) {
+                invitationRepository.deleteByProjectId(projectId);
+                projectRepository.deleteById(projectId);
+                return org.springframework.http.ResponseEntity.ok().build();
         }
 }

@@ -9,4 +9,9 @@ public interface ProjectInvitationRepository extends JpaRepository<ProjectInvita
     List<ProjectInvitation> findByStudentId(Long studentId);
 
     List<ProjectInvitation> findByProjectTeacherId(Long teacherId);
+
+    List<ProjectInvitation> findByProjectIdAndStatus(Long projectId, InvitationStatus status);
+
+    @jakarta.transaction.Transactional
+    void deleteByProjectId(Long projectId);
 }
