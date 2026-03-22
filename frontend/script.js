@@ -504,6 +504,75 @@ async function loadStudentProfile() {
 
     loadStudentSkills();
     try { populateSocialLinks(); } catch (e) { }
+    try { updateDashboardStats(); } catch (e) { }
+}
+
+async function updateDashboardStats() {
+    const statSkills = document.getElementById('statTotalSkills');
+    const statInvites = document.getElementById('statActiveInvitations');
+    const statProjects = document.getElementById('statAcceptedProjects');
+    const statCompletion = document.getElementById('statProfileCompletion');
+
+    if (!statSkills && !statInvites && !statProjects && !statCompletion) return;
+    if (!currentStudent) return;
+
+    // 1. Total Skills
+    const totalSkills = currentStudent.skills ? currentStudent.skills.length : 0;
+    if (statSkills) statSkills.textContent = totalSkills;
+
+    // 2. Profile Completion
+    let filledFields = 0;
+    const fieldsToCheck = [
+        currentStudent.name,
+        currentStudent.email,
+        currentStudent.department,
+        currentStudent.academicYear || currentStudent.year,
+        currentStudent.availabilityStatus,
+        currentStudent.githubUrl,
+        currentStudent.linkedinUrl,
+        currentStudent.portfolioUrl,
+        currentStudent.behanceUrl
+    ];
+
+    fieldsToCheck.forEach(field => {
+        if (field && String(field).trim() !== '' && String(field).toLowerCase() !== 'null') {
+            filledFields++;
+        }
+    });
+
+    if (totalSkills > 0) filledFields++;
+
+    const completionPercentage = Math.round((filledFields / 10) * 100);
+    if (statCompletion) statCompletion.textContent = completionPercentage + '%';
+
+    // 3. Invitations and Projects
+    if (statInvites || statProjects) {
+        try {
+            let invitations = [];
+            if (API_BASE_URL) {
+                invitations = await fetchStudentInvitations();
+            } else {
+                invitations = mockInvitations;
+            }
+
+            if (invitations) {
+                const activeInvitesCount = invitations.filter(inv =>
+                    String(inv.status).toUpperCase() === 'PENDING'
+                ).length;
+
+                const acceptedProjectsCount = invitations.filter(inv =>
+                    String(inv.status).toUpperCase() === 'ACCEPTED'
+                ).length;
+
+                if (statInvites) statInvites.textContent = activeInvitesCount;
+                if (statProjects) statProjects.textContent = acceptedProjectsCount;
+            }
+        } catch (err) {
+            console.error('Failed to load invitations for dashboard stats:', err);
+            if (statInvites) statInvites.textContent = '0';
+            if (statProjects) statProjects.textContent = '0';
+        }
+    }
 }
 
 function renderStudentSkills(studentSkills = []) {
