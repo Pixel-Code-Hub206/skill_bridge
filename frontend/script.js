@@ -1526,7 +1526,7 @@ function loadMyProjects() {
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; align-items: center;">
                         <button class="btn btn-primary btn-sm" onclick="window.location.href='project-candidates.html?id=${project.id}'">View Candidates</button>
                         <button class="btn btn-secondary btn-sm" onclick="window.location.href='teacher-edit-project.html?id=${project.id}'">Edit Project</button>
-                        <button class="btn btn-sm" onclick="showDeleteModal(${project.id})" style="background-color: #ef4444; border-color: #ef4444; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; height: 32px; padding: 0 0.75rem; font-size: 0.875rem;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Delete</button>
+                        <button class="btn btn-danger btn-sm" onclick="showDeleteModal(${project.id})">Delete</button>
                     </div>
                 </div>
             `;
@@ -1613,6 +1613,18 @@ async function loadStudentProfileView() {
     if (viewExpertSkills) viewExpertSkills.textContent = expertCount;
     if (viewAdvancedSkills) viewAdvancedSkills.textContent = advancedCount;
     if (viewIntSkills) viewIntSkills.textContent = intCount;
+
+    const socialLinksContainer = document.getElementById('viewStudentSocialLinks');
+    if (socialLinksContainer) {
+        const linksHtml = [];
+        if (student.githubUrl) linksHtml.push(`<a href="${student.githubUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub</a>`);
+        if (student.linkedinUrl) linksHtml.push(`<a href="${student.linkedinUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="linkedin" style="width: 14px; height: 14px;"></i> LinkedIn</a>`);
+        if (student.portfolioUrl) linksHtml.push(`<a href="${student.portfolioUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="globe" style="width: 14px; height: 14px;"></i> Portfolio</a>`);
+        if (student.behanceUrl) linksHtml.push(`<a href="${student.behanceUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="monitor" style="width: 14px; height: 14px;"></i> Behance</a>`);
+
+        socialLinksContainer.innerHTML = linksHtml.length > 0 ? linksHtml.join('') : '<span style="color: var(--text-light); font-size: 0.85rem;">No social links provided</span>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
 }
 
 // Utility Functions
@@ -1694,8 +1706,14 @@ async function loadTeacherDashboardStats() {
         if (projectsResp.ok) {
             const projects = await projectsResp.json();
 
-            // Since no native 'status' property exists, compute all retrieved teacher projects as active
-            activeProjectsCount = projects.length;
+            const activeProjectsCountForMath = projects.filter(p => !p.status || p.status === 'ACTIVE').length;
+            const finishedProjectsCount = projects.filter(p => p.status === 'FINISHED').length;
+
+            const completedStatEl = document.getElementById('teacherCompletedStat');
+            const activeStatEl = document.getElementById('teacherActiveProjectsStat');
+
+            if (activeStatEl) activeStatEl.textContent = activeProjectsCountForMath;
+            if (completedStatEl) completedStatEl.textContent = finishedProjectsCount;
 
             // Sort natively by ID descending (most recent first) and slice top 3
             const recentProjects = projects.sort((a, b) => b.id - a.id).slice(0, 3);
@@ -1720,7 +1738,12 @@ async function loadTeacherDashboardStats() {
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
-                                <span class="badge badge-info">Active</span>
+                                ${(() => {
+                            const statusStr = project.status || 'ACTIVE';
+                            const statusLabel = statusStr.charAt(0).toUpperCase() + statusStr.slice(1).toLowerCase();
+                            const statusClass = statusStr === 'ACTIVE' ? 'badge-info' : (statusStr === 'FINISHED' ? 'badge-primary' : 'badge-secondary');
+                            return `<span class="badge ${statusClass}">${statusLabel}</span>`;
+                        })()}
                                 <p style="color: var(--text-light); font-size: 0.85rem;">Due: ${formattedDate}</p>
                             </div>
                         </div>
@@ -2012,9 +2035,12 @@ async function loadProjectCandidates() {
                                 ${skillsHtml}
                             </div>
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end;">
-                            <span class="badge badge-info">Accepted</span>
-                            <button class="btn btn-secondary btn-sm" onclick="alert('Message feature coming soon!')">Message Candidate</button>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                            <span class="badge badge-info" style="margin-bottom: 0.5rem;">Accepted</span>
+                            ${student.githubUrl ? `<a href="${student.githubUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem; width: 100%; justify-content: center;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub</a>` : ''}
+                            ${student.linkedinUrl ? `<a href="${student.linkedinUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem; width: 100%; justify-content: center;"><i data-lucide="linkedin" style="width: 14px; height: 14px;"></i> LinkedIn</a>` : ''}
+                            ${student.portfolioUrl ? `<a href="${student.portfolioUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem; width: 100%; justify-content: center;"><i data-lucide="globe" style="width: 14px; height: 14px;"></i> Portfolio</a>` : ''}
+                            ${student.behanceUrl ? `<a href="${student.behanceUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem; width: 100%; justify-content: center;"><i data-lucide="monitor" style="width: 14px; height: 14px;"></i> Behance</a>` : ''}
                         </div>
                     </div>
                 `;
