@@ -1672,6 +1672,103 @@ function humanizeDepartment(d) {
     return d;
 }
 
+async function loadTeacherDashboardStats() {
+    try {
+        const teacherId = localStorage.getItem('userId');
+        if (!teacherId) return;
+
+        // 1. Fetch Projects (Active Projects Count & Recent Projects List)
+        const projectsResp = await fetch(`${API_BASE_URL}/projects/teacher/${teacherId}`, {
+            headers: getAuthHeaders()
+        });
+
+        let activeProjectsCount = 0;
+        let recentProjectsHtml = '';
+
+        if (projectsResp.ok) {
+            const projects = await projectsResp.json();
+
+            // Filter and count active projects
+            const activeProjects = projects.filter(p => p.status === 'ACTIVE');
+            activeProjectsCount = activeProjects.length;
+
+            // Sort natively by ID descending (most recent first) and slice top 3
+            const recentProjects = projects.sort((a, b) => b.id - a.id).slice(0, 3);
+
+            if (recentProjects.length === 0) {
+                recentProjectsHtml = '<p style="color: var(--text-secondary); padding: 1rem; text-align: center;">No projects created yet.</p>';
+            } else {
+                recentProjectsHtml = recentProjects.map(project => {
+                    const skillsHtml = (project.requiredSkills || []).map(skill =>
+                        `<span class="skill-tag">${skill.name}</span>`
+                    ).join('');
+
+                    const statusClass = project.status === 'ACTIVE' ? 'badge-info' : 'badge-secondary';
+                    const formattedDate = project.deadline ? new Date(project.deadline).toLocaleDateString() : 'No deadline';
+
+                    return `
+                        <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <div style="flex: 1;">
+                                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.125rem; margin-bottom: 0.5rem; color: var(--text-primary);">${project.title}</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem;">${project.description}</p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                    ${skillsHtml}
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end;">
+                                <span class="badge ${statusClass}">${project.status}</span>
+                                <p style="color: var(--text-light); font-size: 0.85rem;">Due: ${formattedDate}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // 2. Fetch Total Students (Overall System Population)
+        const studentsResp = await fetch(`${API_BASE_URL}/students`, {
+            headers: getAuthHeaders()
+        });
+        let totalStudentsCount = 0;
+        if (studentsResp.ok) {
+            const students = await studentsResp.json();
+            totalStudentsCount = students.length;
+        }
+
+        // 3. Fetch Invitations (Sent & Accepted)
+        const invitationsResp = await fetch(`${API_BASE_URL}/invitations/teacher/${teacherId}`, {
+            headers: getAuthHeaders()
+        });
+        let invitationsSentCount = 0;
+        let acceptedCount = 0;
+
+        if (invitationsResp.ok) {
+            const invitations = await invitationsResp.json();
+            invitationsSentCount = invitations.length;
+            acceptedCount = invitations.filter(inv => inv.status === 'ACCEPTED').length;
+        }
+
+        // Inject into DOM
+        const activeProjectsEl = document.getElementById('teacherActiveProjectsStat');
+        const totalStudentsEl = document.getElementById('teacherTotalStudentsStat');
+        const invitationsEl = document.getElementById('teacherInvitationsStat');
+        const acceptedEl = document.getElementById('teacherAcceptedStat');
+        const recentContainerEl = document.getElementById('teacherRecentProjectsContainer');
+
+        if (activeProjectsEl) activeProjectsEl.textContent = activeProjectsCount;
+        if (totalStudentsEl) totalStudentsEl.textContent = totalStudentsCount;
+        if (invitationsEl) invitationsEl.textContent = invitationsSentCount;
+        if (acceptedEl) acceptedEl.textContent = acceptedCount;
+
+        if (recentContainerEl) {
+            recentContainerEl.innerHTML = `<div style="display: flex; flex-direction: column;">${recentProjectsHtml}</div>`;
+        }
+
+    } catch (error) {
+        console.error('Error loading teacher dashboard stats:', error);
+    }
+}
+
 function logout() {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);';
@@ -1748,8 +1845,9 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('➕ Create project page detected - loading teacher profile and skills');
         loadTeacherProfile();
         loadAllSkills();
-    } else if (hasTeacherPage) {
-        console.log('👨‍🏫 Teacher page detected - loading teacher profile');
+    } else if (hasTeacherPage && !hasMyProjects && !hasSearchResults && !hasRequiredSkillsContainer && !hasViewStudent) {
+        console.log('👨‍🏫 Teacher page detected - loading dashboard stats');
         loadTeacherProfile();
+        loadTeacherDashboardStats();
     }
 });
