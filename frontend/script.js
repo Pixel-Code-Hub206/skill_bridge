@@ -1053,18 +1053,44 @@ async function createProject(event) {
     // Get required skills
     const requiredSkills = [];
     const requiredSkillIds = [];
-    const skillInputs = document.querySelectorAll('.required-skill-item');
-    skillInputs.forEach(item => {
-        const skillSelect = item.querySelector('.skill-name-input');
-        const skillId = skillSelect.value;
+    const skillInputs = Array.from(document.querySelectorAll('.required-skill-item'));
+
+    for (const item of skillInputs) {
+        const skillInputEl = item.querySelector('.skill-name-input');
+        const rawSkillName = skillInputEl.value.trim();
         const minLevel = parseInt(item.querySelector('.skill-level-input').value);
-        if (skillId) {
-            requiredSkillIds.push(parseInt(skillId));
-            const skill = availableSkills.find(s => s.id == skillId);
-            const skillName = skill ? skill.name : skillId;
-            requiredSkills.push({ id: skillId, name: skillName, minLevel: minLevel });
+
+        if (rawSkillName) {
+            let selectedSkill = availableSkills.find(s => s.name.toLowerCase() === rawSkillName.toLowerCase());
+            let targetSkillId;
+
+            if (selectedSkill) {
+                targetSkillId = selectedSkill.id;
+            } else if (API_BASE_URL) {
+                try {
+                    console.log('Spawning new skill for project dynamically:', rawSkillName);
+                    const createResp = await fetch(`${API_BASE_URL}/skills`, {
+                        method: 'POST',
+                        headers: Object.assign({ 'Content-Type': 'application/json', 'Accept': 'application/json' }, getAuthHeaders()),
+                        body: JSON.stringify({ name: rawSkillName, description: 'Created dynamically from project requirements' })
+                    });
+
+                    if (createResp.ok) {
+                        const createdData = await createResp.json();
+                        targetSkillId = createdData.id;
+                        availableSkills.push(createdData);
+                    }
+                } catch (e) {
+                    console.error('Failed to create new skill:', e);
+                }
+            }
+
+            if (targetSkillId) {
+                requiredSkillIds.push(parseInt(targetSkillId));
+                requiredSkills.push({ id: targetSkillId, name: rawSkillName, minLevel: minLevel });
+            }
         }
-    });
+    }
 
     const teacherId = localStorage.getItem('userId') ? parseInt(localStorage.getItem('userId'), 10) : null;
 
@@ -1124,16 +1150,13 @@ function addRequiredSkill() {
     skillItem.innerHTML = `
         <div class="form-group" style="margin: 0;">
             <label>Skill Name</label>
-            <select class="skill-name-input" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit;">
-                <option value="">-- Select a skill --</option>
-                ${skillOptions}
-            </select>
+            <input type="text" class="skill-name-input form-control" placeholder="e.g., JavaScript, Python" autocomplete="off" required>
         </div>
         <div class="form-group" style="margin: 0;">
             <label>Min. Level (1-5)</label>
-            <input type="number" class="skill-level-input" min="1" max="5" value="3">
+            <input type="number" class="skill-level-input form-control" min="1" max="5" value="3" required>
         </div>
-        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">Remove</button>
+        <button type="button" class="btn btn-danger btn-sm" style="height: 48px;" onclick="this.parentElement.remove()">Remove</button>
     `;
 
     container.appendChild(skillItem);
