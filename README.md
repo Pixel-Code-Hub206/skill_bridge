@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="frontend/assets/logo.svg" width="64" height="64" alt="SkillBridge Logo" />
-
 # SkillBridge
 
 **An AI-powered academic project collaboration platform connecting teachers with skilled students.**
