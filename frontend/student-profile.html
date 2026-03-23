@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - SkillBridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="var(--primary-color)" />
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
+                    </svg>
+                    <span>SkillBridge</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="student-dashboard.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="student-profile.html" class="menu-item active">
+                    <span class="menu-icon"><i data-lucide="user"></i></span>
+                    <span>My Profile</span>
+                </a>
+                <a href="student-skills.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="zap"></i></span>
+                    <span>My Skills</span>
+                </a>
+                <a href="student-invitations.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="mail"></i></span>
+                    <span>Invitations</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar" id="sidebarAvatar">HV</div>
+                    <div class="user-info">
+                        <h4 id="sidebarUserName">Hardik Verma</h4>
+                        <p>Student</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()"
+                    style="width: 100%; margin-top: 1rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <!-- Social / Professional Links (optional fields from backend) -->
+        <!-- Display GitHub, LinkedIn, Portfolio and Behance links if available -->
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">My Profile</h1>
+                    <p class="page-subtitle">Manage your personal information</p>
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Social & Professional Links</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">Optional: share your GitHub,
+                        LinkedIn, Portfolio or Behance profiles.</p>
+                    <div id="socialLinksContainer"
+                        style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                        <a id="socialGithub" href="#" target="_blank" rel="noopener"
+                            style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">🐙</span>
+                            <span>GitHub</span>
+                        </a>
+
+                        <a id="socialLinkedIn" href="#" target="_blank" rel="noopener"
+                            style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">💼</span>
+                            <span>LinkedIn</span>
+                        </a>
+
+                        <a id="socialPortfolio" href="#" target="_blank" rel="noopener"
+                            style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">🌐</span>
+                            <span>Portfolio</span>
+                        </a>
+
+                        <a id="socialBehance" href="#" target="_blank" rel="noopener"
+                            style="display:none; text-decoration:none; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:0.5rem; color:var(--text-primary);">
+                            <span style="margin-right:0.5rem;">🎨</span>
+                            <span>Behance</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Personal Information</h2>
+                </div>
+                <div class="card-body">
+                    <form onsubmit="event.preventDefault(); updateProfile();">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                            <div class="form-group">
+                                <label for="studentName">Full Name</label>
+                                <input type="text" id="studentName" value="Hardik Verma" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentEmail">Email Address</label>
+                                <input type="email" id="studentEmail" value="hardik@example.com" disabled>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentDepartment">Department</label>
+                                <select id="studentDepartment">
+                                    <option value="BCA" selected>BCA</option>
+                                    <option value="MCA">MCA</option>
+                                    <option value="BSC">BSc</option>
+                                    <option value="MSC">MSc</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentYear">Academic Year</label>
+                                <select id="studentYear">
+                                    <option value="FIRST_YEAR">First Year</option>
+                                    <option value="SECOND_YEAR">Second Year</option>
+                                    <option value="THIRD_YEAR" selected>Third Year</option>
+                                    <option value="FOURTH_YEAR">Fourth Year</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="availabilityStatus">Availability Status</label>
+                                <select id="availabilityStatus">
+                                    <option value="AVAILABLE" selected>Available</option>
+                                    <option value="BUSY">Busy</option>
+                                    <option value="OPEN_TO_WORK">Open to Work</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentGithubUrl">GitHub URL</label>
+                                <input type="url" id="studentGithubUrl" placeholder="https://github.com/username">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentLinkedinUrl">LinkedIn URL</label>
+                                <input type="url" id="studentLinkedinUrl"
+                                    placeholder="https://linkedin.com/in/username">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentPortfolioUrl">Portfolio URL</label>
+                                <input type="url" id="studentPortfolioUrl" placeholder="https://your-portfolio.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="studentBehanceUrl">Behance URL</label>
+                                <input type="url" id="studentBehanceUrl" placeholder="https://behance.net/username">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn btn-secondary"
+                                onclick="loadStudentProfile()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Account Settings</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="padding: 1.5rem; background: var(--bg-secondary); border-radius: 0.75rem;">
+                            <h3
+                                style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                                Change Password</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">Update your password to keep
+                                your account secure.</p>
+
+                            <form id="changePasswordForm" onsubmit="event.preventDefault(); updatePassword();">
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="oldPassword">Current Password</label>
+                                    <input type="password" id="oldPassword" required style="width: 100%;"
+                                        placeholder="Enter current password">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" id="newPassword" required style="width: 100%;"
+                                        placeholder="Enter new password">
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-sm" id="changePasswordBtn">Update
+                                    Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

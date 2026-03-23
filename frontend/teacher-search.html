@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Students - SkillBridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="var(--primary-color)" />
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
+                    </svg>
+                    <span>SkillBridge</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="teacher-dashboard.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="teacher-create-project.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="plus-circle"></i></span>
+                    <span>Create Project</span>
+                </a>
+                <a href="teacher-search.html" class="menu-item active">
+                    <span class="menu-icon"><i data-lucide="search"></i></span>
+                    <span>Search Students</span>
+                </a>
+                <a href="teacher-projects.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="folder"></i></span>
+                    <span>My Projects</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">NK</div>
+                    <div class="user-info">
+                        <h4>Mr. Nasrulla Khan</h4>
+                        <p>Teacher</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()"
+                    style="width: 100%; margin-top: 1rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Search Students</h1>
+                    <p class="page-subtitle">Find students with specific skills for your projects</p>
+                </div>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="search-filter-section">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name or email..."
+                        onkeyup="searchStudents()">
+                    <button class="btn btn-primary" onclick="searchStudents()">Search</button>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                        Filters</h3>
+                </div>
+
+                <div class="filter-grid">
+                    <div class="form-group" style="margin: 0;">
+                        <label for="departmentFilter">Department</label>
+                        <select id="departmentFilter" onchange="searchStudents()">
+                            <option value="">All Departments</option>
+                            <option value="BCA">BCA</option>
+                            <option value="MCA">MCA</option>
+                            <option value="B.Tech CS">B.Tech CS</option>
+                            <option value="M.Tech CS">M.Tech CS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label for="yearFilter">Academic Year</label>
+                        <select id="yearFilter" onchange="searchStudents()">
+                            <option value="">All Years</option>
+                            <option value="II Semester">II Semester</option>
+                            <option value="IV Semester">IV Semester</option>
+                            <option value="VI Semester">VI Semester</option>
+                            <option value="VIII Semester">VIII Semester</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label for="availabilityFilter">Availability</label>
+                        <select id="availabilityFilter" onchange="searchStudents()">
+                            <option value="">All Status</option>
+                            <option value="Available">Available</option>
+                            <option value="Busy">Busy</option>
+                            <option value="Open to Work">Open to Work</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin: 0;">
+                        <label for="skillFilter">Skill</label>
+                        <input type="text" id="skillFilter" placeholder="e.g., JavaScript" onkeyup="searchStudents()">
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn btn-secondary btn-sm"
+                        onclick="document.getElementById('departmentFilter').value=''; document.getElementById('yearFilter').value=''; document.getElementById('availabilityFilter').value=''; document.getElementById('skillFilter').value=''; searchStudents();">Clear
+                        Filters</button>
+
+                    <select id="projectSelector" class="form-control" style="max-width: 300px; margin: 0;">
+                        <option value="">-- Select Project for Invitation --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div style="margin-bottom: 1.5rem;">
+                <h2
+                    style="font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 600; color: var(--text-primary);">
+                    Search Results</h2>
+                <p id="searchResultsSubtitle" style="color: var(--text-secondary); font-size: 0.95rem;">Showing students
+                    who match your selected project skills</p>
+            </div>
+
+            <div id="searchResults">
+                <!-- Results will be loaded by JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="noResultsMessage" style="display: none;">
+                <div class="card" style="text-align: center; padding: 4rem 2rem;">
+                    <div style="font-size: 5rem; margin-bottom: 1.5rem;"><i data-lucide="search"></i></div>
+                    <h3
+                        style="font-family: 'Montserrat', sans-serif; font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary);">
+                        No Students Found</h3>
+                    <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Try adjusting your
+                        filters or search criteria to find more students.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+
+</html>

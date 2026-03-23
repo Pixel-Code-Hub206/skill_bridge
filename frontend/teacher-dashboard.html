@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - SkillBridge</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="dashboard-container" id="teacherPage">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                        <rect width="40" height="40" rx="8" fill="var(--primary-color)" />
+                        <path d="M12 15L20 10L28 15V25L20 30L12 25V15Z" stroke="white" stroke-width="2" fill="none" />
+                        <circle cx="20" cy="20" r="3" fill="white" />
+                    </svg>
+                    <span>SkillBridge</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="teacher-dashboard.html" class="menu-item active">
+                    <span class="menu-icon"><i data-lucide="layout-dashboard"></i></span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="teacher-create-project.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="plus-circle"></i></span>
+                    <span>Create Project</span>
+                </a>
+                <a href="teacher-search.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="search"></i></span>
+                    <span>Search Students</span>
+                </a>
+                <a href="teacher-projects.html" class="menu-item">
+                    <span class="menu-icon"><i data-lucide="folder"></i></span>
+                    <span>My Projects</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-info">
+                        <h4>ADMIN</h4>
+                        <p>Teacher</p>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="logout()"
+                    style="width: 100%; margin-top: 1rem;">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back! Here's your overview</p>
+                </div>
+                <div class="top-actions" style="display: flex; gap: 1rem; align-items: center;">
+                    <a href="#recentActivity" class="notification-icon"
+                        style="color: var(--text-secondary); text-decoration: none;">
+                        <i data-lucide="bell"></i>
+                    </a>
+                    <a href="teacher-create-project.html" class="btn btn-primary">Create New Project</a>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i data-lucide="folder"></i></div>
+                    <div class="stat-info">
+                        <h3 id="teacherActiveProjectsStat">-</h3>
+                        <p>Active Projects</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i data-lucide="users"></i></div>
+                    <div class="stat-info">
+                        <h3 id="teacherTotalStudentsStat">-</h3>
+                        <p>Total Students</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i data-lucide="mail"></i></div>
+                    <div class="stat-info">
+                        <h3 id="teacherInvitationsStat">-</h3>
+                        <p>Invitations Sent</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i data-lucide="check-circle"></i></div>
+                    <div class="stat-info">
+                        <h3 id="teacherAcceptedStat">-</h3>
+                        <p>Accepted</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Quick Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <a href="teacher-create-project.html" style="text-decoration: none;">
+                            <div style="padding: 2rem; background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(14, 165, 233, 0.1)); border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;"
+                                onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-4px)';"
+                                onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;"><i data-lucide="plus-circle"></i>
+                                </div>
+                                <h3
+                                    style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+                                    Create New Project</h3>
+                                <p style="color: var(--text-secondary);">Define requirements and start finding students
+                                </p>
+                            </div>
+                        </a>
+                        <a href="teacher-search.html" style="text-decoration: none;">
+                            <div style="padding: 2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(14, 165, 233, 0.1)); border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;"
+                                onmouseover="this.style.borderColor='var(--success-color)'; this.style.transform='translateY(-4px)';"
+                                onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;"><i data-lucide="search"></i></div>
+                                <h3
+                                    style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+                                    Search Students</h3>
+                                <p style="color: var(--text-secondary);">Find students with specific skills</p>
+                            </div>
+                        </a>
+                        <a href="teacher-projects.html" style="text-decoration: none;">
+                            <div style="padding: 2rem; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1)); border-radius: 0.75rem; border: 2px solid transparent; transition: all 0.3s ease; cursor: pointer;"
+                                onmouseover="this.style.borderColor='var(--warning-color)'; this.style.transform='translateY(-4px)';"
+                                onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;"><i data-lucide="folder"></i></div>
+                                <h3
+                                    style="font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+                                    View My Projects</h3>
+                                <p style="color: var(--text-secondary);">Manage and track your projects</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Projects</h2>
+                    <a href="teacher-projects.html" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body" id="teacherRecentProjectsContainer">
+                    <!-- Dynamic Recent Projects will render here -->
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card" id="recentActivity">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                </div>
+                <div class="card-body" id="recentActivityContainer">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Dynamic Recent Activities will render here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

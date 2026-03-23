@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkillBridge</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+      <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+  <body>
+    <div class="landing-container">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <rect width="40" height="40" rx="8" fill="var(--primary-color)" />
+            <path
+              d="M12 15L20 10L28 15V25L20 30L12 25V15Z"
+              stroke="white"
+              stroke-width="2"
+              fill="none"
+            />
+            <circle cx="20" cy="20" r="3" fill="white" />
+          </svg>
+          <span>SkillBridge</span>
+        </div>
+        <nav class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </header>
+
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1 class="hero-title">
+              <span class="title-line">Connecting Skills</span>
+              <span class="title-line">With Opportunities</span>
+            </h1>
+            <p class="hero-subtitle">
+              A comprehensive platform for managing student skills and matching
+              them with academic projects and opportunities.
+            </p>
+            <div class="hero-buttons">
+              <button
+                class="btn btn-primary"
+                onclick="showLoginModal('student')"
+              >
+                Student Login
+              </button>
+              <button
+                class="btn btn-secondary"
+                onclick="showLoginModal('teacher')"
+              >
+                Teacher Login
+              </button>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="floating-card card-1">
+              <div class="card-icon">👨‍🎓</div>
+              <div class="card-text">500+ Students</div>
+            </div>
+            <div class="floating-card card-2">
+              <div class="card-icon">🎯</div>
+              <div class="card-text">1000+ Skills</div>
+            </div>
+            <div class="floating-card card-3">
+              <div class="card-icon"><i data-lucide="layout-dashboard"></i></div>
+              <div class="card-text">Smart Matching</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="features" id="features">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="user"></i></div>
+            <h3>Skill Profiles</h3>
+            <p>
+              Students create detailed profiles showcasing their skills and
+              proficiency levels
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="search"></i></div>
+            <h3>Advanced Search</h3>
+            <p>
+              Teachers can search and filter students based on multiple criteria
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Smart Matching</h3>
+            <p>Automated skill matching with percentage-based ranking system</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><i data-lucide="mail"></i></div>
+            <h3>Invitations</h3>
+            <p>Direct project invitations with status tracking</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer" id="contact">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="logo">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <rect width="40" height="40" rx="8" fill="var(--primary-color)" />
+                <path
+                  d="M12 15L20 10L28 15V25L20 30L12 25V15Z"
+                  stroke="white"
+                  stroke-width="2"
+                  fill="none"
+                />
+                <circle cx="20" cy="20" r="3" fill="white" />
+              </svg>
+              <span>SkillBridge</span>
+            </div>
+            <p>
+              Empowering students and teachers with the tools they need to map
+              skills to opportunities.
+            </p>
+          </div>
+
+          <div class="footer-links">
+            <h4>Explore</h4>
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+          </div>
+
+          <div class="footer-contact">
+            <h4>Contact</h4>
+            <p>Email: mayank@skillbridge.com</p>
+            <p>Phone: +91 9870609788</p>
+            <p>Location: Remote-first</p>
+          </div>
+
+          <div class="footer-newsletter">
+            <h4>Stay Updated</h4>
+            <p>Get product updates and resources in your inbox.</p>
+            <form class="newsletter-form">
+              <input
+                type="email"
+                placeholder="you@example.com"
+                aria-label="Email address"
+                required
+              />
+              <button type="submit" class="btn btn-primary btn-full">
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>© 2026 SkillBridge. All rights reserved.</p>
+          <div class="footer-bottom-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Support</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeLoginModal()">&times;</span>
+        <div class="modal-header">
+          <h2 id="modalTitle">Student Login</h2>
+          <p>Enter your credentials to access your dashboard</p>
+        </div>
+        <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="on">
+          <!-- Hidden fields to capture browser autofill and avoid fighting visible inputs -->
+          <input aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none;" autocomplete="username" />
+          <input aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;pointer-events:none;" type="password" autocomplete="current-password" />
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              inputmode="text"
+              autocomplete="username"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="Your Username"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autocomplete="current-password"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="remember" name="remember" />
+            <label for="remember">Remember me</label>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Login</button>
+          <div class="form-footer">
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
