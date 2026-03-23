@@ -5,6 +5,7 @@ import com.skillbridge.backend.project.Project;
 import com.skillbridge.backend.project.ProjectRepository;
 import com.skillbridge.backend.student.Student;
 import com.skillbridge.backend.student.StudentRepository;
+import com.skillbridge.backend.activity.ActivityService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,14 +19,17 @@ public class ProjectInvitationController {
         private final ProjectInvitationRepository invitationRepository;
         private final ProjectRepository projectRepository;
         private final StudentRepository studentRepository;
+        private final ActivityService activityService;
 
         public ProjectInvitationController(
                         ProjectInvitationRepository invitationRepository,
                         ProjectRepository projectRepository,
-                        StudentRepository studentRepository) {
+                        StudentRepository studentRepository,
+                        ActivityService activityService) {
                 this.invitationRepository = invitationRepository;
                 this.projectRepository = projectRepository;
                 this.studentRepository = studentRepository;
+                this.activityService = activityService;
         }
 
         // Teacher sends invitation
@@ -43,7 +47,16 @@ public class ProjectInvitationController {
                 invitation.setProject(project);
                 invitation.setStudent(student);
 
-                return invitationRepository.save(invitation);
+                ProjectInvitation saved = invitationRepository.save(invitation);
+
+                activityService.logActivity(project.getTeacher().getId(), "TEACHER", "Invitation sent",
+                                "You invited " + student.getName() + " to \"" + project.getTitle() + "\"", "INFO");
+                activityService.logActivity(
+                                student.getId(), "STUDENT", "New Project Invitation", "You were invited to \""
+                                                + project.getTitle() + "\" by " + project.getTeacher().getName(),
+                                "INFO");
+
+                return saved;
         }
 
         // Student views invitations
@@ -71,8 +84,23 @@ public class ProjectInvitationController {
                 ProjectInvitation invitation = invitationRepository.findById(invitationId)
                                 .orElseThrow(() -> new RuntimeException("Invitation not found"));
 
-                invitation.setStatus(InvitationStatus.valueOf(payload.get("status")));
-                return invitationRepository.save(invitation);
+                InvitationStatus newStatus = InvitationStatus.valueOf(payload.get("status"));
+                invitation.setStatus(newStatus);
+                ProjectInvitation saved = invitationRepository.save(invitation);
+
+                String statusLower = newStatus.name().toLowerCase();
+                String statusCapped = statusLower.substring(0, 1).toUpperCase() + statusLower.substring(1);
+                String cssType = newStatus == InvitationStatus.ACCEPTED ? "SUCCESS" : "WARNING";
+
+                activityService.logActivity(saved.getStudent().getId(), "STUDENT", "Project Invitation " + statusCapped,
+                                "You " + statusLower + " the invitation for \"" + saved.getProject().getTitle() + "\"",
+                                cssType);
+                activityService.logActivity(saved.getProject().getTeacher().getId(), "TEACHER",
+                                "Invitation " + statusCapped, saved.getStudent().getName() + " " + statusLower
+                                                + " your invitation for \"" + saved.getProject().getTitle() + "\"",
+                                cssType);
+
+                return saved;
         }
 
         // Teacher views accepted candidates for a project

@@ -8,6 +8,7 @@ import com.skillbridge.backend.skill.SkillRepository;
 import com.skillbridge.backend.student.StudentRepository;
 import com.skillbridge.backend.teacher.Teacher;
 import com.skillbridge.backend.teacher.TeacherRepository;
+import com.skillbridge.backend.activity.ActivityService;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -25,18 +26,21 @@ public class ProjectController {
         private final SkillRepository skillRepository;
         private final StudentRepository studentRepository;
         private final ProjectInvitationRepository invitationRepository;
+        private final ActivityService activityService;
 
         public ProjectController(
                         ProjectRepository projectRepository,
                         TeacherRepository teacherRepository,
                         SkillRepository skillRepository,
                         StudentRepository studentRepository,
-                        ProjectInvitationRepository invitationRepository) {
+                        ProjectInvitationRepository invitationRepository,
+                        ActivityService activityService) {
                 this.projectRepository = projectRepository;
                 this.teacherRepository = teacherRepository;
                 this.skillRepository = skillRepository;
                 this.studentRepository = studentRepository;
                 this.invitationRepository = invitationRepository;
+                this.activityService = activityService;
         }
 
         @PostMapping
@@ -54,7 +58,11 @@ public class ProjectController {
                 project.setTeacher(teacher);
                 project.setRequiredSkills(skills);
 
-                return projectRepository.save(project);
+                Project savedProject = projectRepository.save(project);
+                activityService.logActivity(teacher.getId(), "TEACHER", "Project created",
+                                "You created the project \"" + savedProject.getTitle() + "\"", "SUCCESS");
+
+                return savedProject;
         }
 
         @GetMapping

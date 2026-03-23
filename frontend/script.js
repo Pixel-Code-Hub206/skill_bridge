@@ -295,6 +295,7 @@ function loadTeacherProfile() {
                         sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${teacher.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                         sidebarAvatarEl.style.padding = '0';
                         sidebarAvatarEl.style.overflow = 'hidden';
+                        sidebarAvatarEl.style.backgroundColor = 'transparent';
                     } else {
                         sidebarAvatarEl.textContent = initials;
                     }
@@ -475,6 +476,7 @@ async function loadStudentProfile() {
             sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${currentStudent.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
             sidebarAvatarEl.style.padding = '0';
             sidebarAvatarEl.style.overflow = 'hidden';
+            sidebarAvatarEl.style.backgroundColor = 'transparent';
         } else {
             sidebarAvatarEl.textContent = initials;
         }
@@ -2091,9 +2093,11 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('⚡ Student skills page detected - loading profile and skills');
         loadStudentProfile();
         loadAllSkills();
+        loadRecentActivities(); // Fixed Dashboard DOM hijacking bug
     } else if (hasStudentName) {
         console.log('👤 Student profile/dashboard page detected - loading profile');
         loadStudentProfile();
+        loadRecentActivities();
     } else if (hasSearchResults) {
         console.log('🔍 Teacher search page detected - loading teacher profile and displaying results');
         loadTeacherProfile();
@@ -2125,6 +2129,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('👨‍🏫 Teacher page detected - loading dashboard stats');
         loadTeacherProfile();
         loadTeacherDashboardStats();
+        loadRecentActivities();
     }
 
     // Bind avatar upload handlers
@@ -2228,3 +2233,60 @@ async function updatePassword() {
         btn.disabled = false;
     }
 }
+
+// -----------------------------------------
+// Activity Telemetry Integration
+// -----------------------------------------
+async function loadRecentActivities() {
+    const container = document.getElementById('recentActivityContainer');
+    if (!container) return;
+
+    container.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">Loading activity...</div>';
+
+    const role = localStorage.getItem('userRole');
+    const id = localStorage.getItem('userId');
+    if (!role || !id) return;
+
+    try {
+        const resp = await fetch(`${API_BASE_URL}/activities/${role.toLowerCase()}/${id}?limit=5`, {
+            headers: getAuthHeaders()
+        });
+
+        if (!resp.ok) throw new Error('Failed to fetch activities');
+        const activities = await resp.json();
+
+        container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 1rem;"></div>';
+        const wrapper = container.querySelector('div');
+
+        if (activities.length === 0) {
+            wrapper.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 1rem;">No recent activities found.</p>';
+            return;
+        }
+
+        activities.forEach(activity => {
+            const dateStr = new Date(activity.timestamp).toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            let borderColor = 'var(--primary-color)';
+            if (activity.cssType === 'SUCCESS') borderColor = 'var(--success-color)';
+            if (activity.cssType === 'WARNING') borderColor = 'var(--secondary-color)';
+
+            const div = document.createElement('div');
+            div.style = `padding: 1rem; background: var(--bg-secondary); border-radius: 0.5rem; border-left: 4px solid ${borderColor};`;
+
+            div.innerHTML = `
+                <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">${activity.title}</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">${activity.description}</p>
+                <p style="color: var(--text-light); font-size: 0.85rem; margin-top: 0.5rem;">${dateStr}</p>
+            `;
+            wrapper.appendChild(div);
+        });
+
+    } catch (err) {
+        console.error('Error loading activities:', err);
+        container.innerHTML = '<p style="text-align: center; color: var(--danger-color); padding: 1rem;">Failed to load activities.</p>';
+    }
+}
+
