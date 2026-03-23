@@ -1228,9 +1228,16 @@ function displaySearchResults(students) {
 
     resultsContainer.innerHTML = '';
 
+    const subtitle = document.getElementById('searchResultsSubtitle');
+
     if (students.length === 0) {
+        if (subtitle) subtitle.textContent = 'No students found with the required skills for this project.';
         resultsContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No students found matching your criteria.</p>';
         return;
+    }
+
+    if (subtitle) {
+        subtitle.textContent = `Found ${students.length} student${students.length === 1 ? '' : 's'} with matching skills`;
     }
 
     students.forEach(student => {

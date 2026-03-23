@@ -3,7 +3,10 @@
 # Gemini AI config (contains API key — never commit this)
 frontend/config.js
 
+#Miscellaneous
 README.md
+project_history.md
+frontend_documentation.md
 
 # Java / Maven build artifacts
 backend/target/
