@@ -8,7 +8,7 @@ import com.skillbridge.backend.skill.SkillRepository;
 import com.skillbridge.backend.student.StudentRepository;
 import com.skillbridge.backend.teacher.Teacher;
 import com.skillbridge.backend.teacher.TeacherRepository;
-import jakarta.persistence.Table;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -130,10 +130,11 @@ public class ProjectController {
                 }
 
                 if (payload.get("requiredSkillIds") != null) {
+                        @SuppressWarnings("unchecked")
                         List<Integer> skillIdsRaw = (List<Integer>) payload.get("requiredSkillIds");
 
                         List<Long> skillIds = skillIdsRaw.stream()
-                                        .map(Long::valueOf)
+                                        .map(Integer::longValue)
                                         .toList();
 
                         List<Skill> skills = skillRepository.findAllById(skillIds);

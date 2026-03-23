@@ -3,7 +3,6 @@ package com.skillbridge.backend.invitation;
 import com.skillbridge.backend.project.Project;
 import com.skillbridge.backend.student.Student;
 import jakarta.persistence.*;
-import jdk.jshell.Snippet;
 
 @Entity
 @Table(name = "project_invitations")
@@ -24,7 +23,8 @@ public class ProjectInvitation {
     @Enumerated(EnumType.STRING)
     private InvitationStatus status = InvitationStatus.PENDING;
 
-    public ProjectInvitation() {}
+    public ProjectInvitation() {
+    }
 
     public Long getId() {
         return id;

@@ -1706,13 +1706,13 @@ async function loadTeacherDashboardStats() {
         if (projectsResp.ok) {
             const projects = await projectsResp.json();
 
-            const activeProjectsCountForMath = projects.filter(p => !p.status || p.status === 'ACTIVE').length;
+            activeProjectsCount = projects.filter(p => !p.status || p.status === 'ACTIVE').length;
             const finishedProjectsCount = projects.filter(p => p.status === 'FINISHED').length;
 
             const completedStatEl = document.getElementById('teacherCompletedStat');
             const activeStatEl = document.getElementById('teacherActiveProjectsStat');
 
-            if (activeStatEl) activeStatEl.textContent = activeProjectsCountForMath;
+            if (activeStatEl) activeStatEl.textContent = activeProjectsCount;
             if (completedStatEl) completedStatEl.textContent = finishedProjectsCount;
 
             // Sort natively by ID descending (most recent first) and slice top 3
