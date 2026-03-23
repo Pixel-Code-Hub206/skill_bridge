@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.skillbridge.backend.security.JwtUtils;
+
 import java.util.Optional;
 
 @RestController
@@ -19,11 +22,17 @@ public class AuthController {
 
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
     public AuthController(StudentRepository studentRepository,
-                          TeacherRepository teacherRepository) {
+            TeacherRepository teacherRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtils jwtUtils) {
         this.studentRepository = studentRepository;
         this.teacherRepository = teacherRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     @PostMapping("/student/login")
@@ -31,20 +40,18 @@ public class AuthController {
 
         Optional<Student> studentOpt = studentRepository.findByUsername(request.getUsername());
 
-        if (studentOpt.isEmpty()) {
+        if (studentOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), studentOpt.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
-        Student student = studentOpt.get();
 
-        if (!student.getPassword().equals(request.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
+        Student student = studentOpt.get();
+        String token = jwtUtils.generateToken(student.getId(), "STUDENT");
 
         LoginResponse response = new LoginResponse(
                 student.getId(),
                 "STUDENT",
-                student.getName()
-        );
+                student.getName(),
+                token);
 
         return ResponseEntity.ok(response);
     }
@@ -52,24 +59,20 @@ public class AuthController {
     @PostMapping("/teacher/login")
     public ResponseEntity<?> teacherLogin(@RequestBody LoginRequest request) {
 
-        Optional<Teacher> teacherOpt =
-                teacherRepository.findByUsername(request.getUsername());
+        Optional<Teacher> teacherOpt = teacherRepository.findByUsername(request.getUsername());
 
-        if(teacherOpt.isEmpty()) {
+        if (teacherOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), teacherOpt.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
 
         Teacher teacher = teacherOpt.get();
-
-        if(!teacher.getPassword().equals(request.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
-        }
+        String token = jwtUtils.generateToken(teacher.getId(), "TEACHER");
 
         LoginResponse response = new LoginResponse(
                 teacher.getId(),
                 "TEACHER",
-                teacher.getName()
-        );
+                teacher.getName(),
+                token);
 
         return ResponseEntity.ok(response);
     }

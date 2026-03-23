@@ -31,16 +31,18 @@ public class Student {
     @Enumerated(EnumType.STRING)
     private AvailabilityStatus availabilityStatus;
 
-    //Optional professional profile links
+    // Optional professional profile links
     private String githubUrl;
     private String linkedinUrl;
     private String portfolioUrl;
     private String behanceUrl;
+    private String avatarUrl;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentSkill> skills = new ArrayList<>();
 
-    public Student() {}
+    public Student() {
+    }
 
     public Student(
             String name,
@@ -49,8 +51,7 @@ public class Student {
             String password,
             Department department,
             AcademicYear academicYear,
-            AvailabilityStatus availabilityStatus
-    ) {
+            AvailabilityStatus availabilityStatus) {
         this.name = name;
         this.email = email;
         this.username = username;
@@ -81,7 +82,7 @@ public class Student {
     }
 
     public Department getDepartment() {
-       return department;
+        return department;
     }
 
     public AcademicYear getAcademicYear() {
@@ -154,5 +155,13 @@ public class Student {
 
     public void setBehanceUrl(String behanceUrl) {
         this.behanceUrl = behanceUrl;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

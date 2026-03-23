@@ -291,7 +291,13 @@ function loadTeacherProfile() {
 
                 if (sidebarAvatarEl) {
                     const initials = teacherName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('');
-                    sidebarAvatarEl.textContent = initials;
+                    if (teacher.avatarUrl) {
+                        sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${teacher.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                        sidebarAvatarEl.style.padding = '0';
+                        sidebarAvatarEl.style.overflow = 'hidden';
+                    } else {
+                        sidebarAvatarEl.textContent = initials;
+                    }
                 }
             }
         } catch (err) {
@@ -465,7 +471,13 @@ async function loadStudentProfile() {
     if (sidebarAvatarEl) {
         const displayName = nameVal || getFirst(currentStudent, ['name']) || '';
         const initials = displayName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('') || 'U';
-        sidebarAvatarEl.textContent = initials;
+        if (currentStudent.avatarUrl) {
+            sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${currentStudent.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            sidebarAvatarEl.style.padding = '0';
+            sidebarAvatarEl.style.overflow = 'hidden';
+        } else {
+            sidebarAvatarEl.textContent = initials;
+        }
     }
 
     // set selects — API should return enum values matching option `value`s (e.g. BCA, FIRST_YEAR, AVAILABLE)
@@ -1310,7 +1322,6 @@ async function loadTeacherProjectsForDropdown() {
 }
 
 async function sendInvitation(projectId, studentId, buttonEl) {
-    alert("INVITATION SENT!");
     console.log("INVITE CLICKED", projectId, studentId);
 
     if (buttonEl) {
@@ -2115,4 +2126,62 @@ document.addEventListener('DOMContentLoaded', function () {
         loadTeacherProfile();
         loadTeacherDashboardStats();
     }
+
+    // Bind avatar upload handlers
+    initializeAvatarUpload();
 });
+
+function initializeAvatarUpload() {
+    const sidebarAvatar = document.querySelector('.sidebar .user-avatar') || document.getElementById('sidebarAvatar');
+    if (!sidebarAvatar) return;
+
+    sidebarAvatar.style.cursor = 'pointer';
+    sidebarAvatar.title = 'Click to upload profile picture';
+
+    sidebarAvatar.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png, image/jpeg, image/jpg';
+
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const role = localStorage.getItem('userRole');
+            const id = localStorage.getItem('userId');
+            if (!role || !id) {
+                showNotification('Please login to upload avatar', 'danger');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                sidebarAvatar.style.opacity = '0.5';
+                const resp = await fetch(`${API_BASE_URL}/upload/avatar/${role.toLowerCase()}/${id}`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: formData
+                });
+
+                if (resp.ok) {
+                    const data = await resp.json();
+                    const newAvatar = data.avatarUrl;
+                    sidebarAvatar.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${newAvatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    sidebarAvatar.style.padding = '0';
+                    sidebarAvatar.style.overflow = 'hidden';
+                    showNotification('Profile picture updated successfully!', 'success');
+                } else {
+                    showNotification('Failed to upload image.', 'danger');
+                }
+            } catch (err) {
+                console.error('Error uploading avatar:', err);
+                showNotification('Error uploading image.', 'danger');
+            } finally {
+                sidebarAvatar.style.opacity = '1';
+            }
+        };
+        input.click();
+    });
+}

@@ -3,6 +3,7 @@ package com.skillbridge.backend.student;
 import com.skillbridge.backend.student.dto.StudentProfileDTO;
 import com.skillbridge.backend.student.dto.StudentSkillDTO;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 
 @RestController
@@ -11,13 +12,16 @@ import java.util.List;
 public class StudentController {
 
         private final StudentRepository studentRepository;
+        private final PasswordEncoder passwordEncoder;
 
-        public StudentController(StudentRepository studentRepository) {
+        public StudentController(StudentRepository studentRepository, PasswordEncoder passwordEncoder) {
                 this.studentRepository = studentRepository;
+                this.passwordEncoder = passwordEncoder;
         }
 
         @PostMapping
         public Student createStudent(@RequestBody Student student) {
+                student.setPassword(passwordEncoder.encode(student.getPassword()));
                 return studentRepository.save(student);
         }
 
@@ -49,6 +53,7 @@ public class StudentController {
                                 student.getLinkedinUrl(),
                                 student.getPortfolioUrl(),
                                 student.getBehanceUrl(),
+                                student.getAvatarUrl(),
                                 skillDTOs);
         }
 
