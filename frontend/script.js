@@ -292,7 +292,7 @@ function loadTeacherProfile() {
                 if (sidebarAvatarEl) {
                     const initials = teacherName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('');
                     if (teacher.avatarUrl) {
-                        sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${teacher.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                        sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${teacher.avatarUrl}" crossorigin="anonymous" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                         sidebarAvatarEl.style.padding = '0';
                         sidebarAvatarEl.style.overflow = 'hidden';
                         sidebarAvatarEl.style.backgroundColor = 'transparent';
@@ -473,7 +473,7 @@ async function loadStudentProfile() {
         const displayName = nameVal || getFirst(currentStudent, ['name']) || '';
         const initials = displayName.split(' ').filter(Boolean).map(n => n[0].toUpperCase()).slice(0, 2).join('') || 'U';
         if (currentStudent.avatarUrl) {
-            sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${currentStudent.avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            sidebarAvatarEl.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${currentStudent.avatarUrl}" crossorigin="anonymous" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
             sidebarAvatarEl.style.padding = '0';
             sidebarAvatarEl.style.overflow = 'hidden';
             sidebarAvatarEl.style.backgroundColor = 'transparent';
@@ -1630,13 +1630,110 @@ async function loadStudentProfileView() {
     const socialLinksContainer = document.getElementById('viewStudentSocialLinks');
     if (socialLinksContainer) {
         const linksHtml = [];
-        if (student.githubUrl) linksHtml.push(`<a href="${student.githubUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub</a>`);
-        if (student.linkedinUrl) linksHtml.push(`<a href="${student.linkedinUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="linkedin" style="width: 14px; height: 14px;"></i> LinkedIn</a>`);
+        // GitHub SVG (brand icon removed from Lucide CDN)
+        const githubSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.929.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>`;
+        const linkedinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`;
+        if (student.githubUrl) linksHtml.push(`<a href="${student.githubUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">${githubSvg} GitHub</a>`);
+        if (student.linkedinUrl) linksHtml.push(`<a href="${student.linkedinUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.35rem;">${linkedinSvg} LinkedIn</a>`);
         if (student.portfolioUrl) linksHtml.push(`<a href="${student.portfolioUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="globe" style="width: 14px; height: 14px;"></i> Portfolio</a>`);
         if (student.behanceUrl) linksHtml.push(`<a href="${student.behanceUrl}" target="_blank" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 0.25rem;"><i data-lucide="monitor" style="width: 14px; height: 14px;"></i> Behance</a>`);
 
         socialLinksContainer.innerHTML = linksHtml.length > 0 ? linksHtml.join('') : '<span style="color: var(--text-light); font-size: 0.85rem;">No social links provided</span>';
         if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    // ─── Trigger AI Suitability Analysis ────────────────────────────────────
+    analyseProjectSuitability(student);
+}
+
+async function analyseProjectSuitability(student) {
+    const container = document.getElementById('suitabilityContainer');
+    if (!container) return;
+
+    const skills = (student.skills || []);
+    if (skills.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); padding: 1rem;">No skills data available for analysis.</p>';
+        return;
+    }
+
+    // Build a concise skill list for the prompt
+    const skillLines = skills.map(s => {
+        const profMap = { 1: 'Beginner', 2: 'Elementary', 3: 'Intermediate', 4: 'Advanced', 5: 'Expert' };
+        const lvl = profMap[parseInt(s.proficiency)] || 'Unknown';
+        return `- ${s.skillName || s.name || 'Unknown'} (${lvl})`;
+    }).join('\n');
+
+    const prompt = `You are a technical skill analyser for an academic project platform. A teacher is viewing a student's profile.
+
+Your job: Look at the student's listed skills and their proficiency levels, then produce 3 to 5 SHORT analysis cards that describe:
+- What technical DOMAINS or ROLES this student is strong in (e.g. "Frontend Development", "Java Backend", "UI/UX Design")
+- Where they might need support or are less experienced (e.g. "Database Design", "DevOps", "Mobile Development")
+
+RULES:
+- Base analysis ONLY on the skills listed. Do not invent or assume anything.
+- "type" must be "strong" if the student has at least one relevant skill at level 3+ in that domain, otherwise "weak".
+- "title" = the tech domain or role (e.g. "Frontend Developer", "Backend with Java", "UI/UX Design")
+- "reason" = one concrete sentence referencing actual skill names and levels. Max 15 words.
+- Return ONLY a raw JSON array. No markdown, no explanation, no extra text.
+
+Student skills:
+${skillLines}
+
+Output format (example only — adapt to real skills above):
+[{"type":"strong","title":"Frontend Development","reason":"Strong React and CSS skills at Advanced and Intermediate levels."},{"type":"weak","title":"Database & SQL","reason":"No database skills listed; may need support here."}]`;
+
+    // Key may not exist if config.js is missing
+    const apiKey = (typeof GEMINI_API_KEY !== 'undefined') ? GEMINI_API_KEY : null;
+    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+        container.innerHTML = `<p style="color: var(--text-secondary); padding: 1rem; font-size: 0.9rem;">
+            ⚙️ AI analysis requires a Gemini API key. Copy <code>config.example.js</code> → <code>config.js</code> and add your key.
+        </p>`;
+        return;
+    }
+
+    try {
+        const resp = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.3 }
+                })
+            }
+        );
+
+        if (!resp.ok) throw new Error(`Gemini API error: ${resp.status}`);
+
+        const aiData = await resp.json();
+        const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        // Robustly extract the JSON array regardless of markdown fences or extra text
+        const start = rawText.indexOf('[');
+        const end = rawText.lastIndexOf(']');
+        if (start === -1 || end === -1 || end <= start) throw new Error('No JSON array found in Gemini response');
+        const results = JSON.parse(rawText.slice(start, end + 1));
+
+        container.innerHTML = '';
+        results.forEach(item => {
+            const isStrong = item.type === 'strong';
+            const borderColor = isStrong ? 'var(--success-color)' : 'var(--warning-color)';
+            const iconSvg = isStrong
+                ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:0.35rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:0.35rem;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+
+            const card = document.createElement('div');
+            card.style.cssText = `padding: 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid ${borderColor};`;
+            card.innerHTML = `
+                <p style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center;">${iconSvg}${item.title}</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">${item.reason}</p>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error('Gemini suitability analysis failed:', err);
+        container.innerHTML = `<p style="color: var(--danger-color); padding: 1rem; font-size: 0.9rem;">⚠️ Could not retrieve AI analysis. Check console for details.</p>`;
     }
 }
 
@@ -2173,9 +2270,10 @@ function initializeAvatarUpload() {
                 if (resp.ok) {
                     const data = await resp.json();
                     const newAvatar = data.avatarUrl;
-                    sidebarAvatar.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${newAvatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    sidebarAvatar.innerHTML = `<img src="${API_BASE_URL.replace('/api', '')}${newAvatar}" crossorigin="anonymous" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                     sidebarAvatar.style.padding = '0';
                     sidebarAvatar.style.overflow = 'hidden';
+                    sidebarAvatar.style.backgroundColor = 'transparent';
                     showNotification('Profile picture updated successfully!', 'success');
                 } else {
                     showNotification('Failed to upload image.', 'danger');
