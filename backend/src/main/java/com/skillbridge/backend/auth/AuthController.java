@@ -9,9 +9,11 @@ import com.skillbridge.backend.teacher.TeacherRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.skillbridge.backend.security.JwtUtils;
+import java.security.Principal;
+import com.skillbridge.backend.auth.dto.ChangePasswordRequest;
 
 import java.util.Optional;
 
@@ -75,5 +77,39 @@ public class AuthController {
                 token);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/password/change")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+
+        Long userId = Long.parseLong(principal.getName());
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isStudent = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_STUDENT"));
+
+        if (isStudent) {
+            Optional<Student> studentOpt = studentRepository.findById(userId);
+            if (studentOpt.isEmpty()
+                    || !passwordEncoder.matches(request.getOldPassword(), studentOpt.get().getPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid old password");
+            }
+            Student student = studentOpt.get();
+            student.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            studentRepository.save(student);
+        } else {
+            Optional<Teacher> teacherOpt = teacherRepository.findById(userId);
+            if (teacherOpt.isEmpty()
+                    || !passwordEncoder.matches(request.getOldPassword(), teacherOpt.get().getPassword())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid old password");
+            }
+            Teacher teacher = teacherOpt.get();
+            teacher.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            teacherRepository.save(teacher);
+        }
+
+        return ResponseEntity.ok(java.util.Collections.singletonMap("message", "Password updated successfully"));
     }
 }

@@ -2185,3 +2185,46 @@ function initializeAvatarUpload() {
         input.click();
     });
 }
+
+// -----------------------------------------
+// Core UI / Authentication Integrations
+// -----------------------------------------
+async function updatePassword() {
+    const oldPassword = document.getElementById('oldPassword')?.value;
+    const newPassword = document.getElementById('newPassword')?.value;
+
+    if (!oldPassword || !newPassword) {
+        showNotification('Please fill in both password fields.', 'danger');
+        return;
+    }
+
+    const btn = document.getElementById('changePasswordBtn');
+    if (!btn) return;
+
+    const originalText = btn.textContent;
+    btn.textContent = 'Updating...';
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch(`${API_BASE_URL}/auth/password/change`, {
+            method: 'POST',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, getAuthHeaders()),
+            body: JSON.stringify({ oldPassword, newPassword })
+        });
+
+        if (resp.ok) {
+            showNotification('Password updated successfully!', 'success');
+            const form = document.getElementById('changePasswordForm');
+            if (form) form.reset();
+        } else {
+            const errText = await resp.text();
+            showNotification(errText || 'Failed to update password.', 'danger');
+        }
+    } catch (err) {
+        console.error('Password update error:', err);
+        showNotification('An error occurred while updating the password.', 'danger');
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
