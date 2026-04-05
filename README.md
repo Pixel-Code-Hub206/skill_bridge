@@ -63,6 +63,7 @@ skill_bridge/
 │       ├── project/        # Project CRUD + skill matching
 │       ├── invitation/     # Invitation lifecycle
 │       ├── activity/       # Event-driven notification feed
+│       ├── ai/             # Gemini API integration service
 │       ├── skill/          # Skill catalogue
 │       ├── upload/         # Avatar file upload
 │       ├── security/       # JWT filter, utils, config, DataSeeder
@@ -81,9 +82,7 @@ skill_bridge/
     ├── teacher-edit-project.html
     ├── project-candidates.html
     ├── script.js                   # All frontend logic
-    ├── styles.css
-    ├── config.js                   # 🔑 Gitignored — your Gemini API key
-    └── config.example.js           # Template for contributors
+    └── styles.css
 ```
 
 ---
@@ -117,9 +116,9 @@ cd backend
 The API runs on **http://localhost:8080**
 
 ### 4. Configure Gemini AI (optional)
+Provide your Gemini API key via an environment variable when running the backend, or edit it directly in `backend/src/main/resources/application.properties`:
 ```bash
-cp frontend/config.example.js frontend/config.js
-# Edit config.js and paste your Gemini API key
+export GEMINI_API_KEY="your_actual_key_here"
 # Get one free at: https://aistudio.google.com/app/apikey
 ```
 
@@ -158,7 +157,7 @@ Key base URL: `http://localhost:8080/api`
 - All endpoints except `/api/auth/**`, `/api/students`, `/api/teachers`, and `/uploads/**` require a **Bearer JWT token** in the `Authorization` header.
 - Passwords are hashed with **BCrypt** (strength 10).
 - JWT tokens are valid for **24 hours**.
-- `frontend/config.js` (containing the Gemini key) is **gitignored** — never committed.
+- The Gemini API is managed purely on the backend. The API key is securely injected via the `GEMINI_API_KEY` environment variable inside `application.properties`, eliminating client-side exposure.
 
 ---
 
@@ -166,7 +165,7 @@ Key base URL: `http://localhost:8080/api`
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Copy `frontend/config.example.js` → `frontend/config.js` and add your keys
+3. Make your changes
 4. Run the backend and open the frontend
 5. Submit a pull request
 
