@@ -1669,56 +1669,27 @@ async function analyseProjectSuitability(student) {
         return `- ${s.skillName || s.name || 'Unknown'} (${lvl})`;
     }).join('\n');
 
-    const prompt = `You are a technical skill analyser for an academic project platform. A teacher is viewing a student's profile.
-
-Your job: Look at the student's listed skills and their proficiency levels, then produce 3 to 5 SHORT analysis cards that describe:
-- What technical DOMAINS or ROLES this student is strong in (e.g. "Frontend Development", "Java Backend", "UI/UX Design")
-- Where they might need support or are less experienced (e.g. "Database Design", "DevOps", "Mobile Development")
-
-RULES:
-- Base analysis ONLY on the skills listed. Do not invent or assume anything.
-- "type" must be "strong" if the student has at least one relevant skill at level 3+ in that domain, otherwise "weak".
-- "title" = the tech domain or role (e.g. "Frontend Developer", "Backend with Java", "UI/UX Design")
-- "reason" = one concrete sentence referencing actual skill names and levels. Max 15 words.
-- Return ONLY a raw JSON array. No markdown, no explanation, no extra text.
-
-Student skills:
-${skillLines}
-
-Output format (example only — adapt to real skills above):
-[{"type":"strong","title":"Frontend Development","reason":"Strong React and CSS skills at Advanced and Intermediate levels."},{"type":"weak","title":"Database & SQL","reason":"No database skills listed; may need support here."}]`;
-
-    // Key may not exist if config.js is missing
-    const apiKey = (typeof GEMINI_API_KEY !== 'undefined') ? GEMINI_API_KEY : null;
-    if (!apiKey || apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
-        container.innerHTML = `<p style="color: var(--text-secondary); padding: 1rem; font-size: 0.9rem;">
-            ⚙️ AI analysis requires a Gemini API key. Copy <code>config.example.js</code> → <code>config.js</code> and add your key.
-        </p>`;
-        return;
-    }
-
     try {
-        const resp = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.3 }
-                })
-            }
-        );
+        const resp = await fetch(`${API_BASE_URL}/ai/analyze-skills`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ skills: skillLines })
+        });
 
-        if (!resp.ok) throw new Error(`Gemini API error: ${resp.status}`);
+        if (!resp.ok) {
+            const errorText = await resp.text();
+            throw new Error(`Server returned ${resp.status}: ${errorText}`);
+        }
 
-        const aiData = await resp.json();
-        const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const rawText = await resp.text();
 
         // Robustly extract the JSON array regardless of markdown fences or extra text
         const start = rawText.indexOf('[');
         const end = rawText.lastIndexOf(']');
-        if (start === -1 || end === -1 || end <= start) throw new Error('No JSON array found in Gemini response');
+        if (start === -1 || end === -1 || end <= start) {
+            console.error('Invalid response:', rawText);
+            throw new Error('No JSON array found in response');
+        }
         const results = JSON.parse(rawText.slice(start, end + 1));
 
         container.innerHTML = '';
