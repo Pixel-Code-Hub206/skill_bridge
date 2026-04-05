@@ -1,5 +1,5 @@
 #For Render-Deployment
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
