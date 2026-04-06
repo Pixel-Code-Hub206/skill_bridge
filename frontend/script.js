@@ -119,7 +119,8 @@ const mockInvitations = [
 ];
 
 // Backend API base URL (update to your backend address)
-const API_BASE_URL = 'https://skill-bridge-9g3j.onrender.com/api';
+const API_BASE_URL = 'http://localhost:8080/api';
+//const API_BASE_URL = 'https://skill-bridge-9g3j.onrender.com/api';
 
 // Global skills list
 let availableSkills = [];
@@ -1672,7 +1673,10 @@ async function analyseProjectSuitability(student) {
     try {
         const resp = await fetch(`${API_BASE_URL}/ai/analyze-skills`, {
             method: 'POST',
-            headers: getAuthHeaders(),
+            headers: {
+                ...getAuthHeaders(),
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ skills: skillLines })
         });
 
