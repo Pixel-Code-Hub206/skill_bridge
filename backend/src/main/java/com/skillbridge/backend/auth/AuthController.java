@@ -1,20 +1,20 @@
 package com.skillbridge.backend.auth;
 
+import com.skillbridge.backend.auth.dto.ChangePasswordRequest;
 import com.skillbridge.backend.auth.dto.LoginRequest;
 import com.skillbridge.backend.auth.dto.LoginResponse;
+import com.skillbridge.backend.security.JwtUtils;
 import com.skillbridge.backend.student.Student;
 import com.skillbridge.backend.student.StudentRepository;
 import com.skillbridge.backend.teacher.Teacher;
 import com.skillbridge.backend.teacher.TeacherRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.skillbridge.backend.security.JwtUtils;
-import java.security.Principal;
-import com.skillbridge.backend.auth.dto.ChangePasswordRequest;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Optional;
 
 @RestController
