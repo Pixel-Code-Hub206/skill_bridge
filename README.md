@@ -9,6 +9,10 @@
 ![Gemini AI](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=flat&logo=google)
 ![JWT](https://img.shields.io/badge/Auth-JWT-black?style=flat)
 
+<br/>
+
+<img width="1893" height="1014" alt="screenshot-2026-03-31_21-49-55" src="https://github.com/user-attachments/assets/858dde19-19ae-4ddc-8c50-c1ce5f89389e" />
+
 </div>
 
 ---
@@ -34,6 +38,10 @@ SkillBridge is a web platform that enables **teachers** to post academic project
 
 ---
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/71b9bd8f-cc2f-437b-b214-1fa8a946faca" />
+
+---
+
 ## Tech Stack
 
 ### Backend
@@ -51,9 +59,10 @@ SkillBridge is a web platform that enables **teachers** to post academic project
 
 ---
 
+
 ## Project Structure
 
-```
+```text
 skill_bridge/
 ├── backend/
 │   └── src/main/java/com/skillbridge/backend/
@@ -83,24 +92,28 @@ skill_bridge/
     ├── project-candidates.html
     ├── script.js                   # All frontend logic
     └── styles.css
-```
+````
 
----
+-----
 
 ## Getting Started
 
 ### Prerequisites
-- Java 21+
-- Maven 3.8+
-- PostgreSQL 16+
 
-### 1. Database Setup
+  - Java 21+
+  - Maven 3.8+
+  - PostgreSQL 16+
+
+### 1\. Database Setup
+
 ```sql
 CREATE DATABASE skillbridge;
 ```
 
-### 2. Configure Application
+### 2\. Configure Application
+
 Edit `backend/src/main/resources/application.properties`:
+
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/skillbridge
 spring.datasource.username=your_username
@@ -108,34 +121,82 @@ spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
 ```
 
-### 3. Run the Backend
+### 3\. Run the Backend
+
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
+
 The API runs on **http://localhost:8080**
 
-### 4. Configure Gemini AI (optional)
+### 4\. Configure Gemini AI (optional)
+
 Provide your Gemini API key via an environment variable when running the backend, or edit it directly in `backend/src/main/resources/application.properties`:
+
 ```bash
 export GEMINI_API_KEY="your_actual_key_here"
-# Get one free at: https://aistudio.google.com/app/apikey
+# Get one free at: [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 ```
 
-### 5. Open the Frontend
+### 5\. Open the Frontend
+
 Open `frontend/index.html` with a local server (e.g. VS Code Live Server on port 5500).
 
----
+-----
 
-## Default Accounts
+## 🔑 Test Accounts (Demo Data)
 
-After first startup, the DataSeeder automatically hashes any existing plaintext passwords. You can register new accounts via the UI.
+*Note: For security and institutional integrity, public registration is currently disabled. Please use the following pre-configured demo credentials to explore the platform's features.*
 
----
+### 🎓 Student Accounts
+
+Log in as a student to view the dashboard, manage skills, and respond to project invitations.
+
+| Name | Username | Password | Dept | Year | Status | Key Skills |
+|---|---|---|---|---|---|---|
+| Mayank | `pixel` | `test1234` | BCA | 3rd | Open to Work | Flutter, Spring Boot, Java |
+| Arun Goyal | `Damo` | `design123`| BCA | 2nd | Available | — |
+| Arun Goyal | `arun` | `demo123` | BCA | 2nd | Available | React, JS, CSS, Figma |
+| Priya Sharma | `priya` | `demo123` | MCA | 1st | Open to Work | Python, ML, TensorFlow |
+| Rahul Mehta | `rahul` | `demo123` | BCA | 3rd | Available | Java, Spring Boot, PostgreSQL |
+| Sneha Patel | `sneha` | `demo123` | BSC | 2nd | Busy | Flutter, Kotlin, Git |
+| Arjun Nair | `arjun` | `demo123` | MCA | 2nd | Available | Node.js, JS, MongoDB, Docker |
+| Kavya Reddy | `kavya` | `demo123` | BCA | 4th | Open to Work | UI/UX, Figma, Adobe XD |
+| Rohan Verma | `rohan` | `demo123` | BSC | 1st | Available | Python, Django, PostgreSQL |
+| Anjali Singh | `anjali` | `demo123` | MCA | 3rd | Open to Work | Angular, TypeScript, HTML |
+| Vikram Kumar | `vikram` | `demo123` | BCA | 2nd | Available | Java, Spring Boot, MySQL |
+| Divya Menon | `divya` | `demo123` | BSC | 3rd | Busy | Vue.js, JS, Node.js |
+| Siddharth Joshi| `sid` | `demo123` | MCA | 4th | Available | C++, Python, ML |
+| Neha Gupta | `neha` | `demo123` | BCA | 1st | Open to Work | HTML, CSS, JS, Figma |
+| Karan Malhotra | `karan` | `demo123` | BSC | 2nd | Available | PHP, Laravel, MySQL |
+
+
+### 👨‍🏫 Teacher Accounts
+
+Log in as a teacher to post projects, search for skilled students, trigger AI analysis, and send out invitations.
+
+| Name | Username | Password |
+|---|---|---|
+| Dr. Rao | `rao` | `teach123` |
+| Dr. Nasrulla Khan | `Nasrulla` | `teach123` |
+| Prof. Anita Sharma | `anita` | `demo123` |
+| Dr. Ramesh Iyer | `ramesh` | `demo123` |
+| Prof. Sunita Verma | `sunita` | `demo123` |
+| Dr. Karthik Menon | `karthik` | `demo123` |
+| Prof. Deepa Nair | `deepa` | `demo123` |
+| Dr. Suresh Patel | `suresh` | `demo123` |
+| Prof. Lavanya Kumar | `lavanya` | `demo123` |
+| Dr. Vivek Joshi | `vivek` | `demo123` |
+| Prof. Meera Reddy | `meera` | `demo123` |
+| Dr. Arun Krishnan | `akrishnan` | `demo123` |
+| Prof. Pooja Malhotra | `pooja` | `demo123` |
+
+-----
 
 ## API Overview
 
-Full API documentation: see [`docs/api_documentation.md`](docs/api_documentation.md)
+Full API documentation: see [`docs/api_documentation.md`](https://www.google.com/search?q=docs/api_documentation.md)
 
 Key base URL: `http://localhost:8080/api`
 
@@ -150,27 +211,29 @@ Key base URL: `http://localhost:8080/api`
 | Activity Feed | `/api/activities` |
 | Avatar Upload | `/api/upload` |
 
----
+-----
 
 ## Security
 
-- All endpoints except `/api/auth/**`, `/api/students`, `/api/teachers`, and `/uploads/**` require a **Bearer JWT token** in the `Authorization` header.
-- Passwords are hashed with **BCrypt** (strength 10).
-- JWT tokens are valid for **24 hours**.
-- The Gemini API is managed purely on the backend. The API key is securely injected via the `GEMINI_API_KEY` environment variable inside `application.properties`, eliminating client-side exposure.
+  - All endpoints except `/api/auth/**`, `/api/students`, `/api/teachers`, and `/uploads/**` require a **Bearer JWT token** in the `Authorization` header.
+  - Passwords are hashed with **BCrypt** (strength 10).
+  - JWT tokens are valid for **24 hours**.
+  - The Gemini API is managed purely on the backend. The API key is securely injected via the `GEMINI_API_KEY` environment variable inside `application.properties`, eliminating client-side exposure.
 
----
+-----
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make your changes
-4. Run the backend and open the frontend
-5. Submit a pull request
+1.  Fork the repository
+2.  Create a feature branch: `git checkout -b feature/your-feature`
+3.  Make your changes
+4.  Run the backend and open the frontend
+5.  Submit a pull request
 
----
+-----
 
-## License
+## License & Copyright
 
-This project is submitted as an academic project. All rights reserved.
+©️ This project is submitted as an academic project. All rights reserved.
+
+**The TL;DR:** You are completely free to clone this, tear it apart, use the code, or turn it into your own project. Live and learn\! 🦔🌪️ Just leave my name on the original work, and please don't sue me if my late-night Spring Boot logic somehow crashes your server.
